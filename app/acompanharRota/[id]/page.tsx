@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { useRouter, useParams } from 'next/navigation'
 import MapComponent from '@/components/MapComponent'
 import { routesService } from '@/services/routes'
+import notificationsService from '@/services/notifications'
 import { Route } from '@/types'
 
 const tiposNotificacao = [
@@ -14,6 +15,15 @@ const tiposNotificacao = [
   'Troca de Veículo',
   'Veículo apresenta mau funcionamento',
 ]
+
+// Mapeamento de tipos em português para tipos de API
+const TIPO_NOTIFICACAO_MAP: Record<string, string> = {
+  'Rota Iniciada': 'route_started',
+  'Rota Finalizada': 'route_finished',
+  'Atraso na Rota': 'route_delayed',
+  'Troca de Veículo': 'vehicle_changed',
+  'Veículo apresenta mau funcionamento': 'route_maintenance',
+}
 
 export default function AcompanharRotaPage() {
   const router = useRouter()
@@ -61,15 +71,29 @@ export default function AcompanharRotaPage() {
       setEnviando(true)
       setNotificationError(null)
       
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      // Mapear o tipo selecionado para o tipo da API
+      const tipoApi = TIPO_NOTIFICACAO_MAP[tipoSelecionado] || 'route_started'
+      const mensagemFinal = mensagem || tipoSelecionado
+      
+      // Enviar notificação para a API
+      const response = await notificationsService.sendNotification({
+        type: tipoApi,
+        message: mensagemFinal,
+        route_id: parseInt(rotaId),
+      })
 
+      console.log('Notificação enviada:', response)
+      
       setEnviado(true)
       setTipoSelecionado('')
       setMensagem('')
       
       setTimeout(() => setEnviado(false), 2000)
     } catch (err: any) {
-      setNotificationError(err.message || 'Erro ao enviar notificação')
+      console.error('Erro ao enviar notificação:', err)
+      setNotificationError(
+        err?.message || err?.response?.data?.message || 'Erro ao enviar notificação'
+      )
     } finally {
       setEnviando(false)
     }
