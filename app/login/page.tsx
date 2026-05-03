@@ -1,9 +1,32 @@
 'use client'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/hooks/useAuth'
+import { useState } from 'react'
 
 export default function LoginPage() {
   const router = useRouter()
+  const { login, isLoading, error } = useAuth()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [localError, setLocalError] = useState<string | null>(null)
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLocalError(null)
+
+    if (!email || !password) {
+      setLocalError('Por favor, preencha todos os campos')
+      return
+    }
+
+    try {
+      await login({ email, password })
+      router.push('/dashboard')
+    } catch (err: any) {
+      setLocalError(err.message || 'Erro ao fazer login')
+    }
+  }
 
   return (
     <>
@@ -24,8 +47,9 @@ export default function LoginPage() {
         }
 
         .screen {
-          width: 390px;
-          height: 844px;
+          width: 100%;
+          max-width: 390px;
+          min-height: 100vh;
           background-color: #FAFAFA;
           display: flex;
           flex-direction: column;
@@ -113,12 +137,43 @@ export default function LoginPage() {
           transition: background 0.2s, transform 0.1s;
         }
 
-        .btnEntrar:hover {
+        .btnEntrar:hover:not(:disabled) {
           background-color: #e0a800;
         }
 
-        .btnEntrar:active {
+        .btnEntrar:active:not(:disabled) {
           transform: scale(0.98);
+        }
+
+        .btnEntrar:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
+        }
+
+        .errorMessage {
+          background-color: #fee;
+          border: 1px solid #fcc;
+          color: #c33;
+          padding: 12px;
+          border-radius: 8px;
+          font-size: 12px;
+          margin-bottom: 16px;
+          text-align: center;
+        }
+
+        .loadingSpinner {
+          display: inline-block;
+          width: 14px;
+          height: 14px;
+          border: 2px solid #1A2B4A;
+          border-top: 2px solid #F5B800;
+          border-radius: 50%;
+          animation: spin 0.6s linear infinite;
+          margin-right: 8px;
+        }
+
+        @keyframes spin {
+          to { transform: rotate(360deg); }
         }
       `}</style>
 
@@ -138,45 +193,63 @@ export default function LoginPage() {
         <div className="card">
           <h1 className="cardTitle">MOTORISTA</h1>
 
-          {/* EMAIL */}
-          <div className="inputGroup">
-            <label className="inputLabel">E-MAIL</label>
-            <div className="inputWrapper">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1A2B4A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect width="20" height="16" x="2" y="4" rx="2"/>
-                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
-              </svg>
-              <input
-                type="email"
-                name="email"
-                placeholder="seu@email.com"
-              />
+          {/* MENSAGEM DE ERRO */}
+          {(error || localError) && (
+            <div className="errorMessage">
+              {error || localError}
             </div>
-          </div>
+          )}
 
-          {/* SENHA */}
-          <div className="inputGroup">
-            <label className="inputLabel">SENHA</label>
-            <div className="inputWrapper">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1A2B4A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-              </svg>
-              <input
-                type="password"
-                name="password"
-                placeholder="sua senha"
-              />
+          {/* FORM */}
+          <form onSubmit={handleLogin}>
+            {/* EMAIL */}
+            <div className="inputGroup">
+              <label className="inputLabel">E-MAIL</label>
+              <div className="inputWrapper">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1A2B4A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect width="20" height="16" x="2" y="4" rx="2"/>
+                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                </svg>
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="seu@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={isLoading}
+                />
+              </div>
             </div>
-          </div>
 
-          {/* BOTÃO */}
-          <button
-            className="btnEntrar"
-            onClick={() => router.push('/dashboard')}
-          >
-            ENTRAR
-          </button>
+            {/* SENHA */}
+            <div className="inputGroup">
+              <label className="inputLabel">SENHA</label>
+              <div className="inputWrapper">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1A2B4A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="sua senha"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+
+            {/* BOTÃO */}
+            <button
+              type="submit"
+              className="btnEntrar"
+              disabled={isLoading}
+            >
+              {isLoading && <span className="loadingSpinner"></span>}
+              {isLoading ? 'CONECTANDO...' : 'ENTRAR'}
+            </button>
+          </form>
         </div>
 
       </div>

@@ -1,362 +1,614 @@
 'use client'
 
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-
-const rotas = [
-  { id: 1, horario: '7:10',  inicio: 'CENTRO', ultimaParada: 'EP JEOVÁ' },
-  { id: 2, horario: '8:30',  inicio: 'CENTRO', ultimaParada: 'EP JEOVÁ' },
-  { id: 3, horario: '10:00', inicio: 'CENTRO', ultimaParada: 'EP JEOVÁ' },
-  { id: 4, horario: '13:45', inicio: 'CENTRO', ultimaParada: 'EP JEOVÁ' },
-]
+import { useAuth } from '@/hooks/useAuth'
+import { routesService, expensesService } from '@/services/routes'
+import { Route } from '@/types'
 
 export default function DashboardPage() {
   const router = useRouter()
+  const { driver, logout, isAuthenticated } = useAuth()
+  const [rotas, setRotas] = useState<Route[]>([])
+  const [loadingRoutes, setLoadingRoutes] = useState(true)
+  const [errorRoutes, setErrorRoutes] = useState<string | null>(null)
+
   const [enviando, setEnviando] = useState(false)
   const [enviado, setEnviado] = useState(false)
+  const [vehicle_plate, setVehicle_plate] = useState('')
+  const [value, setValue] = useState('')
+  const [description, setDescription] = useState('')
+  const [proofOfPayment, setProofOfPayment] = useState<File | null>(null)
+  const [expenseError, setExpenseError] = useState<string | null>(null)
 
-  function handleEnviar() {
-    setEnviando(true)
-    setTimeout(() => {
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push('/login')
+    }
+  }, [isAuthenticated, router])
+
+  useEffect(() => {
+    if (isAuthenticated && driver) {
+      fetchRoutes()
+    }
+  }, [isAuthenticated, driver])
+
+  const fetchRoutes = async () => {
+    try {
+      setLoadingRoutes(true)
+      setErrorRoutes(null)
+      const data = await routesService.getRoutes()
+      const driverRoutes = data.filter((rota) => !rota.driver_id || rota.driver_id === driver?.id)
+      setRotas(driverRoutes)
+    } catch (error: any) {
+      setErrorRoutes('Erro ao carregar rotas')
+      console.error('Erro ao buscar rotas:', error)
+    } finally {
+      setLoadingRoutes(false)
+    }
+  }
+
+  const handleEnviarDespesa = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setExpenseError(null)
+
+    if (!vehicle_plate || !value) {
+      setExpenseError('Preencha todos os campos obrigatórios')
+      return
+    }
+
+    if (!proofOfPayment) {
+      setExpenseError('Selecione um comprovante de pagamento')
+      return
+    }
+
+    // Validar tamanho do arquivo (máx 5MB em Base64)
+    if (proofOfPayment.size > 5 * 1024 * 1024) {
+      setExpenseError('Arquivo muito grande. Máximo 5MB. Comprima a imagem e tente novamente.')
+      return
+    }
+
+    try {
+      setEnviando(true)
+      
+      // Convertendo arquivo para Base64 para enviar como string
+      const reader = new FileReader()
+      reader.onload = async () => {
+        try {
+          const base64String = reader.result as string
+          
+          await expensesService.createExpense({
+            vehicle_plate,
+            value: parseFloat(value),
+            description,
+            proof_of_payment: base64String,
+          })
+          
+          setEnviado(true)
+          setVehicle_plate('')
+          setValue('')
+          setDescription('')
+          setProofOfPayment(null)
+          
+          setTimeout(() => setEnviado(false), 2000)
+        } catch (error: any) {
+          // Tratamento de erros mais amigáveis
+          const errorMessage = error.response?.data?.message || error.message || 'Erro ao enviar despesa'
+          const errorCode = error.response?.data?.error
+          
+          let userFriendlyMessage = errorMessage
+          
+          if (errorCode === 'file_too_large' || errorMessage.includes('muito grande')) {
+            userFriendlyMessage = '📸 Arquivo muito grande! Comprima a imagem e tente novamente.'
+          } else if (error.response?.status === 422) {
+            userFriendlyMessage = '⚠️ Verifique os dados: placa, valor e comprovante.'
+          } else if (error.response?.status === 401) {
+            userFriendlyMessage = '🔐 Sessão expirada. Faça login novamente.'
+          } else if (error.response?.status >= 500) {
+            userFriendlyMessage = '🔧 Erro no servidor. Tente novamente em alguns momentos.'
+          } else if (!error.response) {
+            userFriendlyMessage = '📡 Falha de conexão. Verifique sua internet.'
+          }
+          
+          setExpenseError(userFriendlyMessage)
+        } finally {
+          setEnviando(false)
+        }
+      }
+      reader.onerror = () => {
+        setExpenseError('❌ Erro ao ler o arquivo. Tente selecionar outro.')
+        setEnviando(false)
+      }
+      reader.readAsDataURL(proofOfPayment)
+    } catch (error: any) {
+      setExpenseError('❌ Erro ao processar o arquivo.')
       setEnviando(false)
-      setEnviado(true)
-      setTimeout(() => setEnviado(false), 2000)
-    }, 1500)
+    }
+  }
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+      await new Promise(resolve => setTimeout(resolve, 300))
+      router.push('/login')
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error)
+      router.push('/login')
+    }
+  }
+
+  const formatarHorario = (time: string): string => {
+    if (!time) return '--:--'
+    return time.substring(0, 5)
   }
 
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&display=swap');
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+          color: #1A2B4A;
+        }
 
         html, body {
           height: 100%;
           font-family: 'Montserrat', sans-serif;
-          background-color: #d0d0d0;
+          background-color: #e8e8e8;
         }
 
         .screen {
-          width: 390px;
-          min-height: 844px;
+          width: 100%;
+          max-width: 390px;
+          min-height: 100vh;
           background-color: #F4F6FA;
-          margin: 0 auto;
           display: flex;
           flex-direction: column;
+          margin: 0 auto;
         }
 
-        .navbar {
-          padding: 20px 20px 5px 20px;
+        .header {
           background: #ffffff;
-          padding: 5px 20px;
-          border-bottom: 2px solid #F5B800;
+          padding: 4px 12px;
+          border-bottom: 3px solid #F5B800;
           display: flex;
           align-items: center;
-          height: 60px;
+          justify-content: space-between;
+          min-height: 32px;
         }
 
-        .welcomeBar {
+        .footer {
           background: #ffffff;
-          padding: 12px 20px;
-          border-bottom: 1px solid #E8ECF2;
+          padding: 16px 24px;
+          border-top: 2px solid #F5B800;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-top: auto;
+        }
+
+        .footer p {
+          font-size: 10px;
+          color: #8A99B3;
+          text-align: center;
+          margin: 0;
+        }
+
+        .logoWrapper {
+          display: flex;
+          align-items: center;
+        }
+
+        .logoutBtn {
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          padding: 4px 6px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 6px;
+          transition: background 0.2s;
+          color: #1A2B4A;
+          font-weight: 700;
+          font-size: 16px;
+        }
+
+        .logoutBtn:hover {
+          background: #f0f4fa;
+        }
+
+        .content {
+          padding: 24px;
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+          overflow-y: auto;
+          flex: 1;
+        }
+
+        .welcomeSection {
+          text-align: left;
+          margin-bottom: 8px;
         }
 
         .welcomeLabel {
-          font-size: 10px;
+          font-size: 11px;
           font-weight: 600;
           color: #8A99B3;
           letter-spacing: 1px;
           text-transform: uppercase;
-          margin-bottom: 2px;
+          margin-bottom: 4px;
         }
 
         .welcomeName {
-          font-size: 15px;
-          font-weight: 800;
-          color: #1A2B4A;
-        }
-
-        .content {
-          padding: 16px;
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-        }
-
-        .section {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-
-        .sectionHeader {
-          background: linear-gradient(90deg, #F5B800 80%, #ffd04d 100%);
-          padding: 8px 14px;
-          border-radius: 8px;
-          font-size: 11px;
+          font-size: 20px;
           font-weight: 900;
           color: #1A2B4A;
-          letter-spacing: 2px;
-          text-transform: uppercase;
-          box-shadow: 0 2px 8px rgba(245,184,0,0.2);
+          letter-spacing: 0.5px;
         }
 
-        .rotaCard {
+        .card {
+          width: 100%;
           background: #ffffff;
-          border-radius: 10px;
-          overflow: hidden;
-          box-shadow: 0 2px 8px rgba(26,43,74,0.07);
-          display: flex;
-          align-items: stretch;
-          min-height: 80px;
-          transition: box-shadow 0.2s;
+          border-radius: 16px;
+          padding: 24px;
+          box-shadow: 0 4px 20px rgba(26, 43, 74, 0.08);
         }
 
-        .rotaCard:hover {
-          box-shadow: 0 4px 14px rgba(26,43,74,0.13);
+        .cardTitle {
+          font-size: 16px;
+          font-weight: 900;
+          color: #1A2B4A;
+          text-align: center;
+          text-transform: uppercase;
+          letter-spacing: 2px;
+          margin-bottom: 20px;
+          padding-bottom: 12px;
+          border-bottom: 2px solid #F5B800;
         }
 
-        .rotaStripe {
-          width: 5px;
-          background-color: #1A2B4A;
-          flex-shrink: 0;
-        }
-
-        .rotaBody {
-          padding: 16px 12px;
+        .rotasContainer {
           display: flex;
           flex-direction: column;
-          gap: 6px;
-          flex: 1;
+          gap: 12px;
+        }
+
+        .rotaItem {
+          background: linear-gradient(135deg, #f8f9fc 0%, #ffffff 100%);
+          border-left: 4px solid #F5B800;
+          border-radius: 10px;
+          padding: 14px;
+          cursor: pointer;
+          transition: all 0.2s;
+          border: 1.5px solid #E8ECF2;
+        }
+
+        .rotaItem:hover {
+          box-shadow: 0 4px 16px rgba(245, 184, 0, 0.15);
+          border-color: #F5B800;
+          transform: translateX(4px);
         }
 
         .rotaTop {
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 10px;
+          margin-bottom: 8px;
         }
 
-        .rotaHorario {
-          background-color: #1A2B4A;
+        .rotaTime {
+          background: #1A2B4A;
           color: #F5B800;
-          font-size: 13px;
+          font-size: 12px;
           font-weight: 900;
-          padding: 3px 8px;
-          border-radius: 5px;
+          padding: 4px 8px;
+          border-radius: 6px;
           letter-spacing: 1px;
-          min-width: 46px;
+          min-width: 50px;
           text-align: center;
         }
 
-        .rotaInicio {
-          font-size: 11px;
+        .rotaName {
+          font-size: 12px;
           font-weight: 800;
           color: #1A2B4A;
           text-transform: uppercase;
           letter-spacing: 0.5px;
         }
 
-        .rotaInicio span { color: #F5B800; }
-
-        .rotaParada {
-          font-size: 10px;
-          font-weight: 700;
-          color: #5A6A85;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
+        .rotaEnd {
+          font-size: 11px;
+          color: #7A8AA0;
+          margin-left: 10px;
         }
 
-        .rotaBtn {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 0 14px;
-          background: transparent;
-          border: none;
-          cursor: pointer;
-          flex-shrink: 0;
-          transition: background 0.2s;
-        }
-
-        .rotaBtn:hover { background: #f0f4fa; }
-
-        .gastosForm {
-          background: #ffffff;
-          border-radius: 10px;
-          padding: 12px;
-          box-shadow: 0 2px 8px rgba(26,43,74,0.07);
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-        }
-
-        .uploadBox {
-          border: 2px dashed #C8D0DC;
-          border-radius: 8px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding: 14px 10px;
-          gap: 6px;
-          cursor: pointer;
-          transition: border-color 0.2s, background 0.2s;
-          width: 100%;
-        }
-
-        .uploadBox:hover {
-          border-color: #F5B800;
-          background: #FFFBEF;
-        }
-
-        .uploadLabel {
-          font-size: 9px;
-          font-weight: 700;
-          color: #1A2B4A;
+        .loadingText {
           text-align: center;
-          letter-spacing: 1px;
-          text-transform: uppercase;
+          color: #8A99B3;
+          font-size: 12px;
+          padding: 20px;
         }
 
-        .fieldsRow {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 10px;
+        .errorBox {
+          background: linear-gradient(135deg, #ffe0e0 0%, #ffcccc 100%);
+          border: 2px solid #ff6b6b;
+          color: #cc0000;
+          padding: 14px 16px;
+          border-radius: 10px;
+          font-size: 13px;
+          font-weight: 600;
+          text-align: center;
+          box-shadow: 0 4px 12px rgba(255, 107, 107, 0.2);
+          animation: slideIn 0.3s ease-out;
         }
 
-        .fieldGroup {
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .formGroup {
           display: flex;
           flex-direction: column;
-          gap: 3px;
+          gap: 6px;
+          margin-bottom: 14px;
         }
 
-        .fieldLabel {
-          font-size: 9px;
+        .label {
+          font-size: 11px;
           font-weight: 700;
           color: #1A2B4A;
-          letter-spacing: 1px;
+          letter-spacing: 1.5px;
           text-transform: uppercase;
         }
 
-        .fieldInput {
+        .input {
           width: 100%;
+          padding: 12px 14px;
+          background: #F4F6FA;
           border: 1.5px solid #E0E6F0;
-          border-radius: 6px;
-          padding: 6px 8px;
+          border-radius: 8px;
           font-family: 'Montserrat', sans-serif;
-          font-size: 12px;
+          font-size: 13px;
           color: #1A2B4A;
           outline: none;
-          background: #F4F6FA;
-          transition: border-color 0.2s;
-          min-height: 34px;
+          transition: all 0.2s;
         }
 
-        .fieldInput:focus {
+        .input:focus {
           border-color: #F5B800;
           background: #ffffff;
+          box-shadow: 0 0 0 3px rgba(245, 184, 0, 0.1);
         }
 
-        .btnEnviar {
+        .input::placeholder {
+          color: #B8C2D0;
+        }
+
+        .twoColumns {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
+        }
+
+        .textarea {
           width: 100%;
-          padding: 9px;
-          background-color: #F5B800;
+          padding: 12px 14px;
+          background: #F4F6FA;
+          border: 1.5px solid #E0E6F0;
+          border-radius: 8px;
+          font-family: 'Montserrat', sans-serif;
+          font-size: 13px;
+          color: #1A2B4A;
+          outline: none;
+          resize: vertical;
+          min-height: 80px;
+          transition: all 0.2s;
+        }
+
+        .textarea:focus {
+          border-color: #F5B800;
+          background: #ffffff;
+          box-shadow: 0 0 0 3px rgba(245, 184, 0, 0.1);
+        }
+
+        .submitBtn {
+          width: 100%;
+          padding: 14px;
+          background: #F5B800;
           color: #1A2B4A;
           font-family: 'Montserrat', sans-serif;
-          font-size: 11px;
-          font-weight: 800;
+          font-size: 12px;
+          font-weight: 900;
           letter-spacing: 1.5px;
           text-transform: uppercase;
           border: none;
-          border-radius: 8px;
+          border-radius: 10px;
           cursor: pointer;
-          transition: background 0.2s, transform 0.1s;
-          min-height: 34px;
+          transition: all 0.2s;
+          margin-top: 8px;
         }
 
-        .btnEnviar:hover { background-color: #e0a800; }
-        .btnEnviar:active { transform: scale(0.97); }
-        .btnEnviar:disabled { opacity: 0.7; cursor: not-allowed; }
-        .btnEnviado { background-color: #28a745 !important; color: #ffffff !important; }
+        .submitBtn:hover:not(:disabled) {
+          background: #dca000;
+          box-shadow: 0 4px 12px rgba(245, 184, 0, 0.3);
+        }
+
+        .submitBtn:active:not(:disabled) {
+          transform: scale(0.98);
+        }
+
+        .submitBtn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
+        .submitBtn.success {
+          background: #28a745;
+          color: #ffffff;
+        }
+
+        @media (max-width: 480px) {
+          .content {
+            padding: 16px;
+          }
+          
+          .card {
+            padding: 16px;
+          }
+          
+          .welcomeName {
+            font-size: 18px;
+          }
+        }
       `}</style>
 
       <div className="screen">
-
-        <nav className="navbar">
-          <Image src="/logo.png" alt="Omnibus" width={113} height={35} />
-        </nav>
-
-        <div className="welcomeBar">
-          <p className="welcomeLabel">Bem-vindo de volta</p>
-          {/* drivers.name */}
-          <p className="welcomeName">José Bonifácio</p>
-        </div>
+        
+        <header className="header">
+          <div className="logoWrapper">
+            <Image src="/logo.png" alt="Omnibus" width={90} height={28} />
+          </div>
+          <button 
+            className="logoutBtn"
+            onClick={handleLogout}
+            title="Fazer logout"
+          >
+            Sair
+          </button>
+        </header>
 
         <div className="content">
+          
+          <div className="welcomeSection">
+            <div className="welcomeLabel">Bem-vindo de volta</div>
+            <div className="welcomeName">{driver?.name || 'Motorista'}</div>
+          </div>
 
-          <section className="section">
-            <div className="sectionHeader">Rotas Previstas</div>
-            {rotas.map((rota) => (
-              <div key={rota.id} className="rotaCard">
-                <div className="rotaStripe" />
-                <div className="rotaBody">
-                  <div className="rotaTop">
-                    <span className="rotaHorario">{rota.horario}</span>
-                    <span className="rotaInicio"><span>INÍCIO: </span>{rota.inicio}</span>
-                  </div>
-                  <span className="rotaParada">Última parada: {rota.ultimaParada}</span>
-                </div>
-                <button
-                  className="rotaBtn"
+          <div className="card">
+            <div className="cardTitle">Suas Rotas</div>
+            
+            {loadingRoutes && <p className="loadingText">Carregando suas rotas...</p>}
+            {errorRoutes && <div className="errorBox">{errorRoutes}</div>}
+            {!loadingRoutes && rotas.length === 0 && <p className="loadingText">Nenhuma rota prevista no momento</p>}
+            
+            <div className="rotasContainer">
+              {rotas.map((rota) => (
+                <div
+                  key={rota.id}
+                  className="rotaItem"
                   onClick={() => router.push(`/acompanharRota/${rota.id}`)}
-                  aria-label={`Ver detalhes da rota das ${rota.horario}`}
+                  role="button"
+                  tabIndex={0}
                 >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1A2B4A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M9 18l6-6-6-6"/>
-                  </svg>
-                </button>
-              </div>
-            ))}
-          </section>
-
-          <section className="section">
-            <div className="sectionHeader">Cadastrar Gastos</div>
-            <div className="gastosForm">
-
-              <div className="uploadBox" role="button" tabIndex={0} aria-label="Inserir comprovantes">
-                <svg width="29" height="29" viewBox="0 0 24 24" fill="none" stroke="#1A2B4A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                  <polyline points="17 8 12 3 7 8"/>
-                  <line x1="12" y1="3" x2="12" y2="15"/>
-                </svg>
-                <span className="uploadLabel">Inserir Comprovantes</span>
-              </div>
-
-              <div className="fieldsRow">
-                <div className="fieldGroup">
-                  <label className="fieldLabel" htmlFor="valor">Valor</label>
-                  <input id="valor" className="fieldInput" type="number" name="value" placeholder="R$ 0,00" />
+                  <div className="rotaTop">
+                    <span className="rotaTime">{formatarHorario(rota.departure_time || rota.start_time)}</span>
+                    <span className="rotaName">{rota.name || 'Rota'}</span>
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#7A8AA0' }}>
+                    <strong>Partida:</strong> {formatarHorario(rota.departure_time || rota.start_time)}
+                    <div style={{ marginTop: '4px' }}>
+                      <strong>Início:</strong> {rota.start_point}
+                    </div>
+                    <div style={{ marginTop: '4px' }}>
+                      <strong>Fim:</strong> {rota.end_point}
+                    </div>
+                  </div>
                 </div>
-                <div className="fieldGroup">
-                  <label className="fieldLabel" htmlFor="placa">Placa do Ônibus</label>
-                  <input id="placa" className="fieldInput" type="text" name="plate" placeholder="ABC-1234" maxLength={8} />
+              ))}
+            </div>
+          </div>
+
+          <div className="card">
+            <div className="cardTitle">Cadastrar Despesa</div>
+            
+            {expenseError && <div className="errorBox" style={{ marginBottom: '16px' }}>{expenseError}</div>}
+            
+            <form onSubmit={handleEnviarDespesa}>
+              <div className="twoColumns">
+                <div className="formGroup">
+                  <label className="label">Placa *</label>
+                  <input
+                    type="text"
+                    className="input"
+                    placeholder="ABC-1234"
+                    value={vehicle_plate}
+                    onChange={(e) => setVehicle_plate(e.target.value.toUpperCase())}
+                    maxLength={8}
+                    disabled={enviando}
+                    required
+                  />
                 </div>
+                <div className="formGroup">
+                  <label className="label">Valor (R$) *</label>
+                  <input
+                    type="number"
+                    className="input"
+                    placeholder="0,00"
+                    value={value}
+                    onChange={(e) => setValue(e.target.value)}
+                    step="0.01"
+                    min="0"
+                    disabled={enviando}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="formGroup">
+                <label className="label">Descrição</label>
+                <input
+                  type="text"
+                  className="input"
+                  placeholder="Ex: Combustível, manutenção..."
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  disabled={enviando}
+                />
+              </div>
+
+              <div className="formGroup">
+                <label className="label">Comprovante de Pagamento</label>
+                <input
+                  type="file"
+                  className="input"
+                  accept="image/*,.pdf"
+                  onChange={(e) => setProofOfPayment(e.target.files?.[0] || null)}
+                  disabled={enviando}
+                />
+                {proofOfPayment && (
+                  <div style={{ fontSize: '12px', color: '#7A8AA0', marginTop: '8px' }}>
+                    ✓ {proofOfPayment.name}
+                  </div>
+                )}
               </div>
 
               <button
-                className={`btnEnviar${enviado ? ' btnEnviado' : ''}`}
-                onClick={handleEnviar}
-                disabled={enviando}
+                type="submit"
+                className={`submitBtn${enviado ? ' success' : ''}`}
+                disabled={enviando || enviado}
               >
-                {enviando ? 'Enviando...' : enviado ? '✓ Enviado!' : 'Enviar'}
+                {enviando ? '⏳ Enviando...' : enviado ? '✓ Enviado!' : 'Enviar Despesa'}
               </button>
-
-            </div>
-          </section>
+            </form>
+          </div>
 
         </div>
+
+        <footer className="footer">
+          <p>© 2026 Omnibus</p>
+        </footer>
       </div>
     </>
   )

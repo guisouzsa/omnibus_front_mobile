@@ -110,29 +110,12 @@ export default function AcompanharRotaPage() {
 
         .header {
           background: #ffffff;
-          padding: 4px 12px;
+          padding: 16px 24px;
           border-bottom: 3px solid #F5B800;
           display: flex;
           align-items: center;
-          justify-content: flex-start;
-          min-height: 28px;
-        }
-
-        .footer {
-          background: #ffffff;
-          padding: 12px 24px;
-          border-top: 2px solid #F5B800;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-top: auto;
-        }
-
-        .footer p {
-          font-size: 9px;
-          color: #8A99B3;
-          text-align: center;
-          margin: 0;
+          justify-content: space-between;
+          min-height: 70px;
         }
 
         .content {
@@ -178,26 +161,33 @@ export default function AcompanharRotaPage() {
         }
 
         .rotaTitulo {
-          font-size: 16px;
+          font-size: 18px;
           font-weight: 900;
           color: #1A2B4A;
           letter-spacing: 1px;
           text-transform: uppercase;
-          text-align: left;
-          margin: 0 0 24px 0;
+          text-align: center;
+          margin: 12px 0 8px 0;
         }
 
         .rotaInfo {
-          display: none;
+          display: flex;
+          justify-content: center;
+          gap: 16px;
+          font-size: 11px;
+          color: #7A8AA0;
+          margin-bottom: 4px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
         }
 
         .map {
           width: 100%;
-          height: 750px;
+          height: 280px;
           border-radius: 12px;
           overflow: hidden;
           box-shadow: 0 4px 16px rgba(26, 43, 74, 0.1);
-          margin-bottom: 20px;
+          margin-bottom: 8px;
         }
 
         .card {
@@ -228,28 +218,14 @@ export default function AcompanharRotaPage() {
         }
 
         .errorBox {
-          background: linear-gradient(135deg, #ffe0e0 0%, #ffcccc 100%);
-          border: 2px solid #ff6b6b;
-          color: #cc0000;
-          padding: 14px 16px;
-          border-radius: 10px;
-          font-size: 13px;
-          font-weight: 600;
+          background-color: #ffe0e0;
+          border: 1px solid #ffb3b3;
+          color: #c33;
+          padding: 12px 16px;
+          border-radius: 8px;
+          font-size: 12px;
           text-align: center;
           margin-bottom: 16px;
-          box-shadow: 0 4px 12px rgba(255, 107, 107, 0.2);
-          animation: slideIn 0.3s ease-out;
-        }
-
-        @keyframes slideIn {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
         }
 
         .dropdownWrapper {
@@ -426,7 +402,7 @@ export default function AcompanharRotaPage() {
       <div className="screen">
         
         <header className="header">
-          <Image src="/logo.png" alt="Omnibus" width={90} height={28} />
+          <Image src="/logo.png" alt="Omnibus" width={100} height={32} />
         </header>
 
         <div className="content">
@@ -449,7 +425,11 @@ export default function AcompanharRotaPage() {
           {!loading && rota && (
             <>
               <div className="rotaTitulo">
-                {rota.name || rota.id}
+                {rota.start_point} → {rota.end_point}
+              </div>
+              <div className="rotaInfo">
+                <span>🕐 {formatarHorario(rota.start_time)}</span>
+                <span>📍 {rota.distance ? rota.distance + ' km' : 'N/A'}</span>
               </div>
 
               <div className="map">
@@ -531,10 +511,6 @@ export default function AcompanharRotaPage() {
           )}
 
         </div>
-
-        <footer className="footer">
-          <p>© 2026 Omnibus</p>
-        </footer>
       </div>
     </>
   )
