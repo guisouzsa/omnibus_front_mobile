@@ -134,17 +134,17 @@ export default function AcompanharRotaPage() {
 
         .header {
           background: #ffffff;
-          padding: 4px 12px;
+          padding: 2px 8px;
           border-bottom: 3px solid #F5B800;
           display: flex;
           align-items: center;
           justify-content: flex-start;
-          min-height: 28px;
+          min-height: 22px;
         }
 
         .footer {
           background: #ffffff;
-          padding: 12px 24px;
+          padding: 6px 12px;
           border-top: 2px solid #F5B800;
           display: flex;
           align-items: center;
@@ -153,17 +153,17 @@ export default function AcompanharRotaPage() {
         }
 
         .footer p {
-          font-size: 9px;
+          font-size: 8px;
           color: #8A99B3;
           text-align: center;
           margin: 0;
         }
 
         .content {
-          padding: 24px;
+          padding: 12px;
           display: flex;
           flex-direction: column;
-          gap: 20px;
+          gap: 10px;
           overflow-y: auto;
           flex: 1;
         }
@@ -208,7 +208,7 @@ export default function AcompanharRotaPage() {
           letter-spacing: 1px;
           text-transform: uppercase;
           text-align: left;
-          margin: 0 0 24px 0;
+          margin: 0 0 8px 0;
         }
 
         .rotaInfo {
@@ -217,30 +217,32 @@ export default function AcompanharRotaPage() {
 
         .map {
           width: 100%;
-          height: 750px;
+          height: 300px;
           border-radius: 12px;
           overflow: hidden;
           box-shadow: 0 4px 16px rgba(26, 43, 74, 0.1);
-          margin-bottom: 20px;
+          margin-bottom: 8px;
         }
 
         .card {
           width: 100%;
           background: #ffffff;
           border-radius: 16px;
-          padding: 24px;
+          padding: 14px;
           box-shadow: 0 4px 20px rgba(26, 43, 74, 0.08);
+          max-height: 220px;
+          overflow-y: auto;
         }
 
         .cardTitle {
-          font-size: 16px;
+          font-size: 14px;
           font-weight: 900;
           color: #1A2B4A;
           text-align: center;
           text-transform: uppercase;
           letter-spacing: 2px;
-          margin-bottom: 20px;
-          padding-bottom: 12px;
+          margin-bottom: 12px;
+          padding-bottom: 8px;
           border-bottom: 2px solid #F5B800;
         }
 
@@ -278,7 +280,7 @@ export default function AcompanharRotaPage() {
 
         .dropdownWrapper {
           position: relative;
-          margin-bottom: 14px;
+          margin-bottom: 10px;
         }
 
         .dropdownTrigger {
@@ -286,14 +288,14 @@ export default function AcompanharRotaPage() {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 12px 14px;
+          padding: 10px 12px;
           background: #F4F6FA;
           border: 1.5px solid #E0E6F0;
           border-radius: 8px;
           cursor: pointer;
           transition: all 0.2s;
           font-family: 'Montserrat', sans-serif;
-          font-size: 12px;
+          font-size: 11px;
           font-weight: 700;
           color: #1A2B4A;
           letter-spacing: 0.5px;
@@ -331,13 +333,13 @@ export default function AcompanharRotaPage() {
           border-bottom-right-radius: 8px;
           z-index: 10;
           overflow-y: auto;
-          max-height: 180px;
+          max-height: 140px;
           box-shadow: 0 4px 12px rgba(26, 43, 74, 0.1);
         }
 
         .dropdownItem {
-          padding: 10px 14px;
-          font-size: 11px;
+          padding: 8px 12px;
+          font-size: 10px;
           font-weight: 600;
           color: #1A2B4A;
           letter-spacing: 0.5px;
@@ -363,12 +365,12 @@ export default function AcompanharRotaPage() {
         .formGroup {
           display: flex;
           flex-direction: column;
-          gap: 6px;
-          margin-bottom: 14px;
+          gap: 4px;
+          margin-bottom: 10px;
         }
 
         .label {
-          font-size: 11px;
+          font-size: 10px;
           font-weight: 700;
           color: #1A2B4A;
           letter-spacing: 1.5px;
@@ -377,16 +379,16 @@ export default function AcompanharRotaPage() {
 
         .textarea {
           width: 100%;
-          padding: 12px 14px;
+          padding: 8px 10px;
           background: #F4F6FA;
           border: 1.5px solid #E0E6F0;
           border-radius: 8px;
           font-family: 'Montserrat', sans-serif;
-          font-size: 13px;
+          font-size: 12px;
           color: #1A2B4A;
           outline: none;
           resize: vertical;
-          min-height: 90px;
+          min-height: 70px;
           transition: all 0.2s;
         }
 
@@ -402,11 +404,11 @@ export default function AcompanharRotaPage() {
 
         .submitBtn {
           width: 100%;
-          padding: 14px;
+          padding: 10px;
           background: #F5B800;
           color: #1A2B4A;
           font-family: 'Montserrat', sans-serif;
-          font-size: 12px;
+          font-size: 11px;
           font-weight: 900;
           letter-spacing: 1.5px;
           text-transform: uppercase;
@@ -414,7 +416,7 @@ export default function AcompanharRotaPage() {
           border-radius: 10px;
           cursor: pointer;
           transition: all 0.2s;
-          margin-top: 8px;
+          margin-top: 6px;
         }
 
         .submitBtn:hover:not(:disabled) {
