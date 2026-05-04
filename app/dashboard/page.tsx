@@ -13,6 +13,7 @@ export default function DashboardPage() {
   const [rotas, setRotas] = useState<Route[]>([])
   const [loadingRoutes, setLoadingRoutes] = useState(true)
   const [errorRoutes, setErrorRoutes] = useState<string | null>(null)
+  const [currentRotaIndex, setCurrentRotaIndex] = useState(0)
 
   const [enviando, setEnviando] = useState(false)
   const [enviado, setEnviado] = useState(false)
@@ -141,6 +142,14 @@ export default function DashboardPage() {
   const formatarHorario = (time: string): string => {
     if (!time) return '--:--'
     return time.substring(0, 5)
+  }
+
+  const goToNextRota = () => {
+    setCurrentRotaIndex((prev) => (prev + 1) % rotas.length)
+  }
+
+  const goToPrevRota = () => {
+    setCurrentRotaIndex((prev) => (prev - 1 + rotas.length) % rotas.length)
   }
 
   return (
@@ -274,8 +283,17 @@ export default function DashboardPage() {
 
         .rotasContainer {
           display: flex;
-          flex-direction: column;
+          align-items: center;
           gap: 12px;
+          position: relative;
+        }
+
+        .rotasCarousel {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          overflow: hidden;
         }
 
         .rotaItem {
@@ -286,12 +304,42 @@ export default function DashboardPage() {
           cursor: pointer;
           transition: all 0.2s;
           border: 1.5px solid #E8ECF2;
+          min-width: 100%;
+          flex-shrink: 0;
         }
 
         .rotaItem:hover {
           box-shadow: 0 4px 16px rgba(245, 184, 0, 0.15);
           border-color: #F5B800;
           transform: translateX(4px);
+        }
+
+        .navButton {
+          background: #1A2B4A;
+          color: #F5B800;
+          border: none;
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 18px;
+          font-weight: bold;
+          transition: all 0.2s;
+          flex-shrink: 0;
+        }
+
+        .navButton:hover {
+          background: #F5B800;
+          color: #1A2B4A;
+          box-shadow: 0 4px 12px rgba(245, 184, 0, 0.3);
+        }
+
+        .navButton:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
         }
 
         .rotaTop {
@@ -503,31 +551,58 @@ export default function DashboardPage() {
             {errorRoutes && <div className="errorBox">{errorRoutes}</div>}
             {!loadingRoutes && rotas.length === 0 && <p className="loadingText">Nenhuma rota prevista no momento</p>}
             
-            <div className="rotasContainer">
-              {rotas.map((rota) => (
-                <div
-                  key={rota.id}
-                  className="rotaItem"
-                  onClick={() => router.push(`/acompanharRota/${rota.id}`)}
-                  role="button"
-                  tabIndex={0}
+            {!loadingRoutes && rotas.length > 0 && (
+              <div className="rotasContainer">
+                <button 
+                  className="navButton"
+                  onClick={goToPrevRota}
+                  disabled={rotas.length <= 1}
+                  aria-label="Rota anterior"
                 >
-                  <div className="rotaTop">
-                    <span className="rotaTime">{formatarHorario(rota.departure_time || rota.start_time)}</span>
-                    <span className="rotaName">{rota.name || 'Rota'}</span>
-                  </div>
-                  <div style={{ fontSize: '11px', color: '#7A8AA0' }}>
-                    <strong>Partida:</strong> {formatarHorario(rota.departure_time || rota.start_time)}
-                    <div style={{ marginTop: '4px' }}>
-                      <strong>Início:</strong> {rota.start_point}
-                    </div>
-                    <div style={{ marginTop: '4px' }}>
-                      <strong>Fim:</strong> {rota.end_point}
-                    </div>
-                  </div>
+                  ‹
+                </button>
+                
+                <div className="rotasCarousel">
+                  {rotas.map((rota, index) => (
+                    index === currentRotaIndex && (
+                      <div
+                        key={rota.id}
+                        className="rotaItem"
+                        onClick={() => router.push(`/acompanharRota/${rota.id}`)}
+                        role="button"
+                        tabIndex={0}
+                      >
+                        <div className="rotaTop">
+                          <span className="rotaTime">{formatarHorario(rota.departure_time || rota.start_time)}</span>
+                          <span className="rotaName">{rota.name || 'Rota'}</span>
+                        </div>
+                        <div style={{ fontSize: '11px', color: '#7A8AA0' }}>
+                          <strong>Partida:</strong> {formatarHorario(rota.departure_time || rota.start_time)}
+                          <div style={{ marginTop: '4px' }}>
+                            <strong>Início:</strong> {rota.start_point}
+                          </div>
+                          <div style={{ marginTop: '4px' }}>
+                            <strong>Fim:</strong> {rota.end_point}
+                          </div>
+                        </div>
+                        <div style={{ marginTop: '8px', fontSize: '10px', color: '#B8C2D0', textAlign: 'center' }}>
+                          {currentRotaIndex + 1} / {rotas.length}
+                        </div>
+                      </div>
+                    )
+                  ))}
                 </div>
-              ))}
-            </div>
+                
+                <button 
+                  className="navButton"
+                  onClick={goToNextRota}
+                  disabled={rotas.length <= 1}
+                  aria-label="Próxima rota"
+                >
+                  ›
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="card">
