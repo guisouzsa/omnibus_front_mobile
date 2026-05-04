@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { routesService, expensesService } from '@/services/routes'
+import { maskPlate, unmaskPlate, maskCurrency, unmaskCurrency } from '@/utils/mask'
 import { Route } from '@/types'
 
 export default function DashboardPage() {
@@ -78,10 +79,12 @@ export default function DashboardPage() {
       reader.onload = async () => {
         try {
           const base64String = reader.result as string
+          const plateUnmasked = unmaskPlate(vehicle_plate)
+          const valueUnmasked = unmaskCurrency(value)
           
           await expensesService.createExpense({
-            vehicle_plate,
-            value: parseFloat(value),
+            vehicle_plate: plateUnmasked,
+            value: valueUnmasked,
             description,
             proof_of_payment: base64String,
           })
@@ -150,6 +153,16 @@ export default function DashboardPage() {
 
   const goToPrevRota = () => {
     setCurrentRotaIndex((prev) => (prev - 1 + rotas.length) % rotas.length)
+  }
+
+  const handlePlateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const masked = maskPlate(e.target.value)
+    setVehicle_plate(masked)
+  }
+
+  const handleValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const masked = maskCurrency(e.target.value)
+    setValue(masked)
   }
 
   return (
@@ -619,7 +632,7 @@ export default function DashboardPage() {
                     className="input"
                     placeholder="ABC-1234"
                     value={vehicle_plate}
-                    onChange={(e) => setVehicle_plate(e.target.value.toUpperCase())}
+                    onChange={handlePlateChange}
                     maxLength={8}
                     disabled={enviando}
                     required
@@ -628,13 +641,11 @@ export default function DashboardPage() {
                 <div className="formGroup">
                   <label className="label">Valor (R$) *</label>
                   <input
-                    type="number"
+                    type="text"
                     className="input"
-                    placeholder="0,00"
+                    placeholder="R$ 0,00"
                     value={value}
-                    onChange={(e) => setValue(e.target.value)}
-                    step="0.01"
-                    min="0"
+                    onChange={handleValueChange}
                     disabled={enviando}
                     required
                   />
