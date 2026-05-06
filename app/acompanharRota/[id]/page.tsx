@@ -61,6 +61,30 @@ export default function AcompanharRotaPage() {
     }
   }
 
+  const getRouteName = (): string => {
+    return rota?.name || 'Rota'
+  }
+
+  const getVehiclePlate = (): string => {
+    return rota?.vehicle?.plate || 'placa não informada'
+  }
+
+  const buildNotificationMessage = () => {
+    const baseMessage = mensagem || tipoSelecionado
+    const routeName = getRouteName()
+    const plate = getVehiclePlate()
+
+    if (['Rota Iniciada', 'Rota Finalizada', 'Atraso na Rota'].includes(tipoSelecionado)) {
+      return `${baseMessage} - ${routeName}`
+    }
+
+    if (['Troca de Veículo', 'Veículo apresenta mau funcionamento'].includes(tipoSelecionado)) {
+      return `${baseMessage} - ${plate}`
+    }
+
+    return baseMessage
+  }
+
   const handleEnviarNotificacao = async () => {
     if (!tipoSelecionado && !mensagem) {
       setNotificationError('Selecione um tipo ou escreva uma mensagem')
@@ -73,7 +97,7 @@ export default function AcompanharRotaPage() {
       
       // Mapear o tipo selecionado para o tipo da API
       const tipoApi = TIPO_NOTIFICACAO_MAP[tipoSelecionado] || 'route_started'
-      const mensagemFinal = mensagem || tipoSelecionado
+      const mensagemFinal = buildNotificationMessage()
       
       // Enviar notificação para a API
       const response = await notificationsService.sendNotification({

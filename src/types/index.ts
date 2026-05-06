@@ -20,6 +20,10 @@ export interface Route {
   stops?: string[]
   driver_id?: number
   vehicle_id?: number
+  vehicle?: {
+    id: number
+    plate: string
+  }
   created_at?: string
   updated_at?: string
 }
