@@ -699,3 +699,5 @@ export default function DashboardPage() {
     </>
   )
 }
+    // Validar tamanho do arquivo (máx 5MB em Base64)
+
