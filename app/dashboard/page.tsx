@@ -65,68 +65,70 @@ export default function DashboardPage() {
       return
     }
 
-    // Validar tamanho do arquivo (máx 5MB em Base64)
-    if (proofOfPayment.size > 5 * 1024 * 1024) {
-      setExpenseError('Arquivo muito grande. Máximo 5MB. Comprima a imagem e tente novamente.')
+    // Limite real: 3MB no arquivo original (base64 aumenta ~33%)
+    if (proofOfPayment.size > 3 * 1024 * 1024) {
+      setExpenseError('📸 Arquivo muito grande! Use uma imagem menor que 3MB.')
+      return
+    }
+
+    // Só aceita imagem
+    if (!proofOfPayment.type.startsWith('image/')) {
+      setExpenseError('⚠️ Envie apenas imagens (JPG, PNG, WEBP).')
       return
     }
 
     try {
       setEnviando(true)
-      
-      // Convertendo arquivo para Base64 para enviar como string
-      const reader = new FileReader()
-      reader.onload = async () => {
-        try {
-          const base64String = reader.result as string
-          const plateUnmasked = unmaskPlate(vehicle_plate)
-          const valueUnmasked = unmaskCurrency(value)
-          
-          await expensesService.createExpense({
-            vehicle_plate: plateUnmasked,
-            value: valueUnmasked,
-            description,
-            proof_of_payment: base64String,
-          })
-          
-          setEnviado(true)
-          setVehicle_plate('')
-          setValue('')
-          setDescription('')
-          setProofOfPayment(null)
-          
-          setTimeout(() => setEnviado(false), 2000)
-        } catch (error: any) {
-          // Tratamento de erros mais amigáveis
-          const errorMessage = error.response?.data?.message || error.message || 'Erro ao enviar despesa'
-          const errorCode = error.response?.data?.error
-          
-          let userFriendlyMessage = errorMessage
-          
-          if (errorCode === 'file_too_large' || errorMessage.includes('muito grande')) {
-            userFriendlyMessage = '📸 Arquivo muito grande! Comprima a imagem e tente novamente.'
-          } else if (error.response?.status === 422) {
-            userFriendlyMessage = '⚠️ Verifique os dados: placa, valor e comprovante.'
-          } else if (error.response?.status === 401) {
-            userFriendlyMessage = '🔐 Sessão expirada. Faça login novamente.'
-          } else if (error.response?.status >= 500) {
-            userFriendlyMessage = '🔧 Erro no servidor. Tente novamente em alguns momentos.'
-          } else if (!error.response) {
-            userFriendlyMessage = '📡 Falha de conexão. Verifique sua internet.'
-          }
-          
-          setExpenseError(userFriendlyMessage)
-        } finally {
-          setEnviando(false)
-        }
-      }
-      reader.onerror = () => {
-        setExpenseError('❌ Erro ao ler o arquivo. Tente selecionar outro.')
+
+      const base64String = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(reader.result as string)
+        reader.onerror = () => reject(new Error('Erro ao ler o arquivo.'))
+        reader.readAsDataURL(proofOfPayment)
+      })
+
+      // Checa tamanho do base64 gerado (limite seguro: ~4MB de string)
+      if (base64String.length > 4 * 1024 * 1024) {
+        setExpenseError('📸 Imagem ainda muito grande após conversão. Use uma imagem menor.')
         setEnviando(false)
+        return
       }
-      reader.readAsDataURL(proofOfPayment)
+
+      const plateUnmasked = unmaskPlate(vehicle_plate)
+      const valueUnmasked = unmaskCurrency(value)
+
+      await expensesService.createExpense({
+        vehicle_plate: plateUnmasked,
+        value: valueUnmasked,
+        description,
+        proof_of_payment: base64String,
+      })
+
+      setEnviado(true)
+      setVehicle_plate('')
+      setValue('')
+      setDescription('')
+      setProofOfPayment(null)
+      setTimeout(() => setEnviado(false), 2000)
+
     } catch (error: any) {
-      setExpenseError('❌ Erro ao processar o arquivo.')
+      const status = error?.response?.status
+      const msg = error?.response?.data?.message || error?.message || ''
+
+      if (msg.includes('muito grande') || error?.response?.data?.error === 'file_too_large') {
+        setExpenseError('📸 Arquivo muito grande! Use uma imagem menor que 3MB.')
+      } else if (status === 422) {
+        setExpenseError('⚠️ Verifique os dados: placa, valor e comprovante.')
+      } else if (status === 401) {
+        setExpenseError('🔐 Sessão expirada. Faça login novamente.')
+      } else if (status >= 500) {
+        setExpenseError('🔧 Erro no servidor. Tente novamente.')
+      } else if (!error?.response) {
+        setExpenseError('📡 Sem conexão. Verifique sua internet.')
+      } else {
+        setExpenseError(msg || '❌ Erro ao enviar despesa.')
+      }
+    } finally {
       setEnviando(false)
     }
   }
@@ -382,12 +384,6 @@ export default function DashboardPage() {
           letter-spacing: 0.5px;
         }
 
-        .rotaEnd {
-          font-size: 11px;
-          color: #7A8AA0;
-          margin-left: 10px;
-        }
-
         .loadingText {
           text-align: center;
           color: #8A99B3;
@@ -409,14 +405,8 @@ export default function DashboardPage() {
         }
 
         @keyframes slideIn {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
         }
 
         .formGroup {
@@ -463,25 +453,10 @@ export default function DashboardPage() {
           gap: 12px;
         }
 
-        .textarea {
-          width: 100%;
-          padding: 12px 14px;
-          background: #F4F6FA;
-          border: 1.5px solid #E0E6F0;
-          border-radius: 8px;
-          font-family: 'Montserrat', sans-serif;
-          font-size: 13px;
-          color: #1A2B4A;
-          outline: none;
-          resize: vertical;
-          min-height: 80px;
-          transition: all 0.2s;
-        }
-
-        .textarea:focus {
-          border-color: #F5B800;
-          background: #ffffff;
-          box-shadow: 0 0 0 3px rgba(245, 184, 0, 0.1);
+        .fileHint {
+          font-size: 11px;
+          color: #B8C2D0;
+          margin-top: 4px;
         }
 
         .submitBtn {
@@ -521,37 +496,25 @@ export default function DashboardPage() {
         }
 
         @media (max-width: 480px) {
-          .content {
-            padding: 16px;
-          }
-          
-          .card {
-            padding: 16px;
-          }
-          
-          .welcomeName {
-            font-size: 18px;
-          }
+          .content { padding: 16px; }
+          .card { padding: 16px; }
+          .welcomeName { font-size: 18px; }
         }
       `}</style>
 
       <div className="screen">
-        
+
         <header className="header">
           <div className="logoWrapper">
             <Image src="/logo.png" alt="Omnibus" width={90} height={28} />
           </div>
-          <button 
-            className="logoutBtn"
-            onClick={handleLogout}
-            title="Fazer logout"
-          >
+          <button className="logoutBtn" onClick={handleLogout} title="Fazer logout">
             Sair
           </button>
         </header>
 
         <div className="content">
-          
+
           <div className="welcomeSection">
             <div className="welcomeLabel">Bem-vindo de volta</div>
             <div className="welcomeName">{driver?.name || 'Motorista'}</div>
@@ -559,14 +522,16 @@ export default function DashboardPage() {
 
           <div className="card">
             <div className="cardTitle">Suas Rotas</div>
-            
+
             {loadingRoutes && <p className="loadingText">Carregando suas rotas...</p>}
             {errorRoutes && <div className="errorBox">{errorRoutes}</div>}
-            {!loadingRoutes && rotas.length === 0 && <p className="loadingText">Nenhuma rota prevista no momento</p>}
-            
+            {!loadingRoutes && rotas.length === 0 && (
+              <p className="loadingText">Nenhuma rota prevista no momento</p>
+            )}
+
             {!loadingRoutes && rotas.length > 0 && (
               <div className="rotasContainer">
-                <button 
+                <button
                   className="navButton"
                   onClick={goToPrevRota}
                   disabled={rotas.length <= 1}
@@ -574,10 +539,10 @@ export default function DashboardPage() {
                 >
                   ‹
                 </button>
-                
+
                 <div className="rotasCarousel">
-                  {rotas.map((rota, index) => (
-                    index === currentRotaIndex && (
+                  {rotas.map((rota, index) =>
+                    index === currentRotaIndex ? (
                       <div
                         key={rota.id}
                         className="rotaItem"
@@ -591,22 +556,18 @@ export default function DashboardPage() {
                         </div>
                         <div style={{ fontSize: '11px', color: '#7A8AA0' }}>
                           <strong>Partida:</strong> {formatarHorario(rota.departure_time || rota.start_time)}
-                          <div style={{ marginTop: '4px' }}>
-                            <strong>Início:</strong> {rota.start_point}
-                          </div>
-                          <div style={{ marginTop: '4px' }}>
-                            <strong>Fim:</strong> {rota.end_point}
-                          </div>
+                          <div style={{ marginTop: '4px' }}><strong>Início:</strong> {rota.start_point}</div>
+                          <div style={{ marginTop: '4px' }}><strong>Fim:</strong> {rota.end_point}</div>
                         </div>
                         <div style={{ marginTop: '8px', fontSize: '10px', color: '#B8C2D0', textAlign: 'center' }}>
                           {currentRotaIndex + 1} / {rotas.length}
                         </div>
                       </div>
-                    )
-                  ))}
+                    ) : null
+                  )}
                 </div>
-                
-                <button 
+
+                <button
                   className="navButton"
                   onClick={goToNextRota}
                   disabled={rotas.length <= 1}
@@ -620,9 +581,11 @@ export default function DashboardPage() {
 
           <div className="card">
             <div className="cardTitle">Cadastrar Despesa</div>
-            
-            {expenseError && <div className="errorBox" style={{ marginBottom: '16px' }}>{expenseError}</div>}
-            
+
+            {expenseError && (
+              <div className="errorBox" style={{ marginBottom: '16px' }}>{expenseError}</div>
+            )}
+
             <form onSubmit={handleEnviarDespesa}>
               <div className="twoColumns">
                 <div className="formGroup">
@@ -669,12 +632,13 @@ export default function DashboardPage() {
                 <input
                   type="file"
                   className="input"
-                  accept="image/*,.pdf"
+                  accept="image/*"
                   onChange={(e) => setProofOfPayment(e.target.files?.[0] || null)}
                   disabled={enviando}
                 />
+                <span className="fileHint">Apenas imagens (JPG, PNG, WEBP) — máx. 3MB</span>
                 {proofOfPayment && (
-                  <div style={{ fontSize: '12px', color: '#7A8AA0', marginTop: '8px' }}>
+                  <div style={{ fontSize: '12px', color: '#7A8AA0', marginTop: '4px' }}>
                     ✓ {proofOfPayment.name}
                   </div>
                 )}
@@ -699,5 +663,3 @@ export default function DashboardPage() {
     </>
   )
 }
-    // Validar tamanho do arquivo (máx 5MB em Base64)
-
