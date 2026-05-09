@@ -3,12 +3,12 @@ import { Route, Expense, MonthlySummary } from '@/types'
 
 class RoutesService {
   async getRoutes(): Promise<Route[]> {
-    const response = await apiService.get<{ data: Route[] }>('/routes')
+    const response = await apiService.get<{ data: Route[] }>('/drivers/routes')
     return response.data || []
   }
 
   async getRoute(id: number): Promise<Route> {
-    const response = await apiService.get<{ data: Route }>(`/routes/${id}`)
+    const response = await apiService.get<{ data: Route }>(`/drivers/routes/${id}`)
     return response.data
   }
 }

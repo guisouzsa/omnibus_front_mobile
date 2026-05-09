@@ -11,8 +11,14 @@ export interface Driver {
 export interface Route {
   id: number
   name: string
-  start_point: string
-  end_point: string
+  start_point: string | { name: string; lat?: number; lng?: number; cep?: string; reference?: string }
+  start_point_lat?: number
+  start_point_lng?: number
+  start_point_cep?: string
+  start_point_reference?: string
+  end_point: string | { name: string; lat?: number; lng?: number }
+  end_point_lat?: number
+  end_point_lng?: number
   start_time: string
   end_time: string
   departure_time?: string
@@ -23,7 +29,14 @@ export interface Route {
   vehicle?: {
     id: number
     plate: string
+    model?: string
   }
+  school?: {
+    id: number
+    name: string
+    address: string
+  }
+  status?: 'assigned' | 'unassigned'
   created_at?: string
   updated_at?: string
 }

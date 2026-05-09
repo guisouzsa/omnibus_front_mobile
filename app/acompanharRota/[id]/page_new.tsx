@@ -425,7 +425,7 @@ export default function AcompanharRotaPage() {
           {!loading && rota && (
             <>
               <div className="rotaTitulo">
-                {rota.start_point} → {rota.end_point}
+                {typeof rota.start_point === 'object' ? rota.start_point?.name : rota.start_point} → {typeof rota.end_point === 'object' ? rota.end_point?.name : rota.end_point}
               </div>
               <div className="rotaInfo">
                 <span>🕐 {formatarHorario(rota.start_time)}</span>
@@ -435,14 +435,14 @@ export default function AcompanharRotaPage() {
               <div className="map">
                 <MapComponent
                   startPoint={{
-                    lat: -19.8226,
-                    lng: -43.9441,
-                    name: rota.start_point || 'Início',
+                    lat: (typeof rota.start_point === 'object' ? rota.start_point?.lat : rota.start_point_lat) || -19.8226,
+                    lng: (typeof rota.start_point === 'object' ? rota.start_point?.lng : rota.start_point_lng) || -43.9441,
+                    name: typeof rota.start_point === 'object' ? rota.start_point?.name : (rota.start_point || 'Início'),
                   }}
                   endPoint={{
-                    lat: -19.9226,
-                    lng: -43.8441,
-                    name: rota.end_point || 'Fim',
+                    lat: (typeof rota.end_point === 'object' ? rota.end_point?.lat : rota.end_point_lat) || -19.9226,
+                    lng: (typeof rota.end_point === 'object' ? rota.end_point?.lng : rota.end_point_lng) || -43.8441,
+                    name: typeof rota.end_point === 'object' ? rota.end_point?.name : (rota.end_point || 'Fim'),
                   }}
                   height="100%"
                 />

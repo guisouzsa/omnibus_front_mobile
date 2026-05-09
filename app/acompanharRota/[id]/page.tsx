@@ -254,8 +254,10 @@ export default function AcompanharRotaPage() {
           border-radius: 16px;
           padding: 14px;
           box-shadow: 0 4px 20px rgba(26, 43, 74, 0.08);
-          max-height: 220px;
-          overflow-y: auto;
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
         }
 
         .cardTitle {
@@ -268,6 +270,33 @@ export default function AcompanharRotaPage() {
           margin-bottom: 12px;
           padding-bottom: 8px;
           border-bottom: 2px solid #F5B800;
+          flex-shrink: 0;
+        }
+
+        .cardContent {
+          flex: 1;
+          overflow-y: auto;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          padding-right: 4px;
+        }
+
+        .cardContent::-webkit-scrollbar {
+          width: 4px;
+        }
+
+        .cardContent::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        .cardContent::-webkit-scrollbar-thumb {
+          background: #E0E6F0;
+          border-radius: 2px;
+        }
+
+        .cardContent::-webkit-scrollbar-thumb:hover {
+          background: #B8C2D0;
         }
 
         .loadingText {
@@ -505,14 +534,14 @@ export default function AcompanharRotaPage() {
               <div className="map">
                 <MapComponent
                   startPoint={{
-                    lat: -19.8226,
-                    lng: -43.9441,
-                    name: rota.start_point || 'Início',
+                    lat: (typeof rota.start_point === 'object' ? rota.start_point?.lat : rota.start_point_lat) || -19.8226,
+                    lng: (typeof rota.start_point === 'object' ? rota.start_point?.lng : rota.start_point_lng) || -43.9441,
+                    name: typeof rota.start_point === 'object' ? rota.start_point?.name : (rota.start_point || 'Ponto de Saída'),
                   }}
                   endPoint={{
-                    lat: -19.9226,
-                    lng: -43.8441,
-                    name: rota.end_point || 'Fim',
+                    lat: (typeof rota.end_point === 'object' ? rota.end_point?.lat : rota.end_point_lat) || -19.9226,
+                    lng: (typeof rota.end_point === 'object' ? rota.end_point?.lng : rota.end_point_lng) || -43.8441,
+                    name: typeof rota.end_point === 'object' ? rota.end_point?.name : (rota.end_point || 'Ponto de Chegada'),
                   }}
                   height="100%"
                 />
@@ -521,7 +550,8 @@ export default function AcompanharRotaPage() {
               <div className="card">
                 <div className="cardTitle">Enviar Notificação</div>
 
-                {notificationError && <div className="errorBox" style={{ marginBottom: '16px' }}>{notificationError}</div>}
+                <div className="cardContent">
+                  {notificationError && <div className="errorBox" style={{ marginBottom: '16px' }}>{notificationError}</div>}
 
                 <div className="dropdownWrapper">
                   <button

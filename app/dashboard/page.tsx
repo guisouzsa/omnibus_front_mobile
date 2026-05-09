@@ -41,8 +41,8 @@ export default function DashboardPage() {
       setLoadingRoutes(true)
       setErrorRoutes(null)
       const data = await routesService.getRoutes()
-      const driverRoutes = data.filter((rota) => !rota.driver_id || rota.driver_id === driver?.id)
-      setRotas(driverRoutes)
+      // Backend agora retorna apenas rotas do motorista autenticado
+      setRotas(Array.isArray(data.data) ? data.data : data)
     } catch (error: any) {
       setErrorRoutes('Erro ao carregar rotas')
       console.error('Erro ao buscar rotas:', error)
@@ -556,8 +556,8 @@ export default function DashboardPage() {
                         </div>
                         <div style={{ fontSize: '11px', color: '#7A8AA0' }}>
                           <strong>Partida:</strong> {formatarHorario(rota.departure_time || rota.start_time)}
-                          <div style={{ marginTop: '4px' }}><strong>Início:</strong> {rota.start_point}</div>
-                          <div style={{ marginTop: '4px' }}><strong>Fim:</strong> {rota.end_point}</div>
+                          <div style={{ marginTop: '4px' }}><strong>Início:</strong> {typeof rota.start_point === 'object' ? rota.start_point?.name : rota.start_point}</div>
+                          <div style={{ marginTop: '4px' }}><strong>Fim:</strong> {typeof rota.end_point === 'object' ? rota.end_point?.name : rota.end_point}</div>
                         </div>
                         <div style={{ marginTop: '8px', fontSize: '10px', color: '#B8C2D0', textAlign: 'center' }}>
                           {currentRotaIndex + 1} / {rotas.length}
