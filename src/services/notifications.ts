@@ -23,7 +23,17 @@ class NotificationsService {
         notification
       )
       return response
-    } catch (error) {
+    } catch (error: any) {
+      const status = error?.response?.status
+      if (status >= 500) {
+        throw new Error('Erro no servidor. Tente novamente em instantes.')
+      } else if (status === 401) {
+        throw new Error('Sessão expirada. Faça login novamente.')
+      } else if (status === 422) {
+        throw new Error('Dados inválidos. Verifique as informações.')
+      } else if (!error?.response) {
+        throw new Error('Sem conexão. Verifique sua internet.')
+      }
       throw error
     }
   }
@@ -35,7 +45,7 @@ class NotificationsService {
       )
       return response.data || []
     } catch (error) {
-      throw error
+      return [] 
     }
   }
 
@@ -46,7 +56,7 @@ class NotificationsService {
       )
       return response.data || []
     } catch (error) {
-      throw error
+      return []
     }
   }
 
@@ -54,7 +64,7 @@ class NotificationsService {
     try {
       await apiService.put(`/drivers/notifications/${notificationId}/read`, {})
     } catch (error) {
-      throw error
+      // silencioso
     }
   }
 }
