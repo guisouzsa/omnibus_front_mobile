@@ -42,7 +42,7 @@ export default function DashboardPage() {
       setErrorRoutes(null)
       const data = await routesService.getRoutes()
       // Backend agora retorna apenas rotas do motorista autenticado
-      setRotas(Array.isArray(data.data) ? data.data : data)
+      setRotas(Array.isArray(data) ? data : [])
     } catch (error: any) {
       setErrorRoutes('Erro ao carregar rotas')
       console.error('Erro ao buscar rotas:', error)
