@@ -606,6 +606,7 @@ export default function AcompanharRotaPage() {
                 >
                   {enviando ? '⏳ Enviando...' : enviado ? '✓ Enviada!' : 'Enviar Notificação'}
                 </button>
+                </div>
               </div>
             </>
           )}
