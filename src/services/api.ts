@@ -96,16 +96,18 @@ class ApiService {
 
   private handleError(error: any) {
     if (error.response) {
-      // Erro da API
       const message = error.response.data?.message || error.response.statusText
-      return new Error(message)
+      const err = new Error(message) as any
+      err.response = error.response
+      return err
     } else if (error.request) {
-      // Erro de rede
       return new Error('Erro de conexão com o servidor')
     } else {
-      return error
+    return error
     }
   }
 }
+
+
 
 export default new ApiService()
