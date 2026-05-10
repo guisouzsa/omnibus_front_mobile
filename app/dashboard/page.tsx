@@ -633,7 +633,7 @@ export default function DashboardPage() {
           {/* ── Header ── */}
           <header className="header">
             <div className="header-logo">
-              <Image src="/logo.jpg" alt="Omnibus" width={110} height={36} style={{ objectFit: 'contain' }} />
+              <Image src="/logo.png" alt="Omnibus" width={110} height={36} style={{ objectFit: 'contain' }} />
             </div>
             <button className="logout-btn" onClick={handleLogout}>Sair</button>
           </header>
