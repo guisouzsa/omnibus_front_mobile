@@ -10,6 +10,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [localError, setLocalError] = useState<string | null>(null)
+  const [showPassword, setShowPassword] = useState(false)
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -190,6 +191,20 @@ export default function LoginPage() {
         .input-wrap input::placeholder { color: #b0bac6; font-size: 14px; }
         .input-wrap input:disabled { opacity: 0.6; }
 
+        .eye-btn {
+          background: none;
+          border: none;
+          cursor: pointer;
+          padding: 4px;
+          display: flex;
+          align-items: center;
+          color: #b0bac6;
+          flex-shrink: 0;
+          transition: color 0.15s;
+        }
+
+        .eye-btn:hover { color: #6b7a8d; }
+
         .field-hint {
           font-size: 10px;
           color: #9aa5b4;
@@ -307,13 +322,33 @@ export default function LoginPage() {
                     <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                   </svg>
                   <input
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     placeholder="sua senha"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={isLoading}
                     autoComplete="current-password"
                   />
+                  <button
+                    type="button"
+                    className="eye-btn"
+                    onClick={() => setShowPassword((v) => !v)}
+                    tabIndex={-1}
+                    aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                  >
+                    {showPassword ? (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                        <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                        <line x1="1" y1="1" x2="23" y2="23"/>
+                      </svg>
+                    ) : (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                    )}
+                  </button>
                 </div>
                 <span className="field-hint">Fornecida pela secretaria no seu cadastro</span>
               </div>
