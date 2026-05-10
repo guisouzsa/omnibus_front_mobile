@@ -152,7 +152,7 @@ export default function DashboardPage() {
 
         /* ── Header minimalista ── */
         .header {
-          background: #1b3f63;
+          background: #01233F;
           height: 48px;
           display: flex;
           align-items: center;
@@ -165,7 +165,7 @@ export default function DashboardPage() {
 
         /* ── Welcome strip FIXO ── */
         .welcome-strip {
-          background: #1b3f63;
+          background: #01233F;
           padding: 14px 20px 26px;
           position: sticky;
           top: 48px;
@@ -176,14 +176,16 @@ export default function DashboardPage() {
           gap: 12px;
         }
 
+        /* Arredondamento que cria a transição azul → cinza */
         .welcome-strip::after {
           content: '';
           position: absolute;
-          bottom: -16px;
+          bottom: -20px;
           left: 0; right: 0;
           height: 20px;
           background: #f4f6fa;
           border-radius: 20px 20px 0 0;
+          z-index: 1;
         }
 
         .welcome-left { display: flex; flex-direction: column; }
@@ -248,10 +250,14 @@ export default function DashboardPage() {
           flex: 1;
           overflow-y: auto;
           background: #f4f6fa;
+          /* garante que os cards não sobrepõem a faixa azul */
+          position: relative;
+          z-index: 0;
         }
 
         .sections {
-          padding: 28px 16px 24px;
+          /* 20px para cobrir o ::after da welcome-strip + folga visual */
+          padding: 32px 16px 24px;
           display: flex;
           flex-direction: column;
           gap: 16px;
@@ -263,7 +269,9 @@ export default function DashboardPage() {
           border-radius: 16px;
           border: 1px solid #e2e6ea;
           overflow: hidden;
-          box-shadow: 0 2px 12px rgba(27,63,99,0.06);
+          box-shadow: 0 2px 12px rgba(1,35,63,0.06);
+          position: relative;
+          z-index: 0;
         }
 
         .card-header {
@@ -287,7 +295,7 @@ export default function DashboardPage() {
         .card-header-text {
           font-size: 11px;
           font-weight: 700;
-          color: #1b3f63;
+          color: #01233F;
           letter-spacing: 1.2px;
           text-transform: uppercase;
         }
@@ -304,7 +312,7 @@ export default function DashboardPage() {
         .nav-btn {
           width: 34px; height: 34px;
           border-radius: 50%;
-          background: #1b3f63;
+          background: #01233F;
           color: #f1bb13;
           border: none;
           cursor: pointer;
@@ -318,7 +326,7 @@ export default function DashboardPage() {
           line-height: 1;
         }
 
-        .nav-btn:hover:not(:disabled) { background: #f1bb13; color: #1b3f63; }
+        .nav-btn:hover:not(:disabled) { background: #f1bb13; color: #01233F; }
         .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
         .route-card {
@@ -338,7 +346,7 @@ export default function DashboardPage() {
         }
 
         .route-badge {
-          background: #1b3f63;
+          background: #01233F;
           color: #f1bb13;
           font-size: 11px;
           font-weight: 700;
@@ -351,7 +359,7 @@ export default function DashboardPage() {
         .route-name {
           font-size: 13px;
           font-weight: 700;
-          color: #1b3f63;
+          color: #01233F;
         }
 
         .route-row {
@@ -366,7 +374,7 @@ export default function DashboardPage() {
         .route-row:last-of-type { margin-bottom: 0; }
 
         .route-row strong {
-          color: #1b3f63;
+          color: #01233F;
           font-weight: 600;
           min-width: 48px;
           flex-shrink: 0;
@@ -387,7 +395,7 @@ export default function DashboardPage() {
           font-family: 'DM Sans', sans-serif;
           font-size: 11px;
           font-weight: 700;
-          color: #1b3f63;
+          color: #01233F;
           letter-spacing: 0.8px;
           text-transform: uppercase;
           cursor: pointer;
@@ -469,26 +477,27 @@ export default function DashboardPage() {
         .label {
           font-size: 10px;
           font-weight: 700;
-          color: #1b3f63;
+          color: #01233F;
           letter-spacing: 1.2px;
           text-transform: uppercase;
         }
 
+        /* font-size: 16px evita zoom automático no iOS/Android */
         .input {
           width: 100%;
           height: 46px;
           border: 1.5px solid #e2e6ea;
           border-radius: 10px;
           padding: 0 13px;
-          font-size: 13px;
-          color: #1b3f63;
+          font-size: 16px;
+          color: #01233F;
           background: #f7f8fa;
           font-family: 'DM Sans', sans-serif;
           outline: none;
           transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
         }
 
-        .input::placeholder { color: #b0bac6; font-size: 12px; }
+        .input::placeholder { color: #b0bac6; font-size: 13px; }
 
         .input:focus {
           border-color: #f1bb13;
@@ -529,7 +538,7 @@ export default function DashboardPage() {
           font-size: 12px;
           font-weight: 700;
           letter-spacing: 1.5px;
-          color: #1b3f63;
+          color: #01233F;
           text-transform: uppercase;
           cursor: pointer;
           font-family: 'DM Sans', sans-serif;
@@ -553,15 +562,15 @@ export default function DashboardPage() {
 
         .btn-spinner {
           width: 14px; height: 14px;
-          border: 2px solid rgba(27,63,99,0.2);
-          border-top-color: #1b3f63;
+          border: 2px solid rgba(1,35,63,0.2);
+          border-top-color: #01233F;
           border-radius: 50%;
           animation: spin 0.6s linear infinite;
         }
 
         /* ── Footer ── */
         .footer {
-          background: #1b3f63;
+          background: #01233F;
           border-top: 2px solid #f1bb13;
           padding: 13px;
           text-align: center;
@@ -646,7 +655,7 @@ export default function DashboardPage() {
                                 className="ver-rota-btn"
                                 onClick={() => router.push(`/acompanharRota/${rota.id}`)}
                               >
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1b3f63" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#01233F" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                                   <circle cx="12" cy="12" r="3"/>
                                 </svg>
@@ -708,7 +717,7 @@ export default function DashboardPage() {
                       <input
                         type="file"
                         className="input"
-                        style={{ paddingTop: '11px', height: 'auto', minHeight: '46px', fontSize: '12px' }}
+                        style={{ paddingTop: '11px', height: 'auto', minHeight: '46px', fontSize: '13px' }}
                         accept="image/*"
                         onChange={(e) => setProofOfPayment(e.target.files?.[0] || null)}
                         disabled={enviando}
