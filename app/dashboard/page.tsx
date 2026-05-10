@@ -166,46 +166,17 @@ export default function DashboardPage() {
           background: #e8eaed;
         }
 
-        /* ── Phone shell ── */
+        /* ── Shell ── */
         .shell {
           min-height: 100vh;
           display: flex;
-          align-items: flex-start;
           justify-content: center;
-          padding: 0;
-          background: #e8eaed;
-        }
-
-        @media (min-width: 520px) {
-          .shell {
-            padding: 32px 0 48px;
-            align-items: flex-start;
-          }
-          .phone {
-            border-radius: 40px;
-            box-shadow:
-              0 0 0 10px #1a1a1a,
-              0 0 0 12px #2a2a2a,
-              0 32px 80px rgba(0,0,0,0.35);
-            overflow: hidden;
-          }
-          .phone::before {
-            content: '';
-            display: block;
-            width: 120px;
-            height: 6px;
-            background: #1a1a1a;
-            border-radius: 3px;
-            margin: 0 auto;
-            position: relative;
-            top: 14px;
-            z-index: 10;
-          }
+          background: #f4f6fa;
         }
 
         .phone {
           width: 100%;
-          max-width: 390px;
+          max-width: 430px;
           min-height: 100vh;
           background: #ffffff;
           display: flex;
