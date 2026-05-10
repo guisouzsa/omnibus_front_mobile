@@ -388,7 +388,7 @@ export default function DashboardPage() {
           gap: 8px;
           width: 100%;
           margin-top: 12px;
-          padding: 11px 0;
+          padding: 11px 16px;
           background: #01233F;
           border: none;
           border-radius: 8px;
@@ -400,6 +400,12 @@ export default function DashboardPage() {
           text-transform: uppercase;
           cursor: pointer;
           transition: background 0.15s;
+          line-height: 1;
+        }
+
+        .ver-rota-btn svg {
+          display: block;
+          flex-shrink: 0;
         }
 
         .ver-rota-btn:hover {
