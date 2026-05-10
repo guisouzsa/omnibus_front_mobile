@@ -57,7 +57,7 @@ export default function LoginPage() {
 
         /* ── Top azul com logo ── */
         .top-block {
-          background: #1b3f63;
+          background: #01233F;
           padding: 52px 28px 44px;
           display: flex;
           flex-direction: column;
@@ -75,12 +75,11 @@ export default function LoginPage() {
           border-radius: 26px 26px 0 0;
         }
 
-        /* Fundo levemente translúcido para dar contraste à logo */
+        /* Sem fundo — logo diretamente sobre o azul */
         .logo-wrap {
-          background: rgba(255,255,255,0.13);
-          border-radius: 14px;
-          padding: 16px 30px;
-          backdrop-filter: blur(4px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
         /* ── Form area ── */
@@ -94,7 +93,7 @@ export default function LoginPage() {
         .page-title {
           font-size: 22px;
           font-weight: 800;
-          color: #1b3f63;
+          color: #01233F;
           letter-spacing: -0.5px;
           margin-bottom: 4px;
         }
@@ -154,7 +153,7 @@ export default function LoginPage() {
         .label {
           font-size: 10px;
           font-weight: 700;
-          color: #1b3f63;
+          color: #01233F;
           letter-spacing: 1.2px;
           text-transform: uppercase;
         }
@@ -177,17 +176,18 @@ export default function LoginPage() {
           box-shadow: 0 0 0 3px rgba(241,187,19,0.12);
         }
 
+        /* font-size: 16px evita o zoom automático no iOS/Android */
         .input-wrap input {
           flex: 1;
           border: none;
           background: transparent;
           font-family: 'DM Sans', sans-serif;
-          font-size: 14px;
-          color: #1b3f63;
+          font-size: 16px;
+          color: #01233F;
           outline: none;
         }
 
-        .input-wrap input::placeholder { color: #b0bac6; }
+        .input-wrap input::placeholder { color: #b0bac6; font-size: 14px; }
         .input-wrap input:disabled { opacity: 0.6; }
 
         .field-hint {
@@ -205,7 +205,7 @@ export default function LoginPage() {
           font-size: 13px;
           font-weight: 700;
           letter-spacing: 1px;
-          color: #1b3f63;
+          color: #01233F;
           text-transform: uppercase;
           cursor: pointer;
           font-family: 'DM Sans', sans-serif;
@@ -228,8 +228,8 @@ export default function LoginPage() {
 
         .btn-spinner {
           width: 14px; height: 14px;
-          border: 2px solid rgba(27,63,99,0.2);
-          border-top-color: #1b3f63;
+          border: 2px solid rgba(1,35,63,0.2);
+          border-top-color: #01233F;
           border-radius: 50%;
           animation: spin 0.6s linear infinite;
         }
@@ -237,7 +237,7 @@ export default function LoginPage() {
         @keyframes spin { to { transform: rotate(360deg); } }
 
         .footer {
-          background: #1b3f63;
+          background: #01233F;
           border-top: 2px solid #f1bb13;
           padding: 13px;
           text-align: center;
