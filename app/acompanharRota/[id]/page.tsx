@@ -93,11 +93,6 @@ export default function AcompanharRotaPage() {
     }
   }
 
-  const formatarHorario = (time: string): string => {
-    if (!time) return '--:--'
-    return time.substring(0, 5)
-  }
-
   const startName = rota
     ? (typeof rota.start_point === 'object' ? rota.start_point?.name : rota.start_point) || 'Ponto de Saída'
     : ''
@@ -134,9 +129,9 @@ export default function AcompanharRotaPage() {
           flex-direction: column;
         }
 
-        /* ── Top bar com voltar + nome da rota ── */
+        /* ── Top bar ── */
         .topbar {
-          background: #1b3f63;
+          background: #01233F;
           height: 56px;
           display: flex;
           align-items: center;
@@ -162,7 +157,6 @@ export default function AcompanharRotaPage() {
         }
 
         .back-btn:hover { background: rgba(255,255,255,0.08); }
-
         .back-btn svg { display: block; }
 
         .back-label {
@@ -209,7 +203,7 @@ export default function AcompanharRotaPage() {
           border-radius: 16px;
           overflow: hidden;
           border: 1px solid #e2e6ea;
-          box-shadow: 0 2px 12px rgba(27,63,99,0.08);
+          box-shadow: 0 2px 12px rgba(1,35,63,0.08);
           height: 300px;
         }
 
@@ -218,7 +212,7 @@ export default function AcompanharRotaPage() {
           background: #fff;
           border-radius: 14px;
           border: 1px solid #e2e6ea;
-          box-shadow: 0 2px 10px rgba(27,63,99,0.05);
+          box-shadow: 0 2px 10px rgba(1,35,63,0.05);
           overflow: hidden;
         }
 
@@ -256,7 +250,7 @@ export default function AcompanharRotaPage() {
         .route-info-value {
           font-size: 13px;
           font-weight: 600;
-          color: #1b3f63;
+          color: #01233F;
         }
 
         .route-info-time {
@@ -313,7 +307,7 @@ export default function AcompanharRotaPage() {
           border-radius: 16px;
           border: 1px solid #e2e6ea;
           overflow: hidden;
-          box-shadow: 0 2px 12px rgba(27,63,99,0.05);
+          box-shadow: 0 2px 12px rgba(1,35,63,0.05);
         }
 
         .card-header {
@@ -337,7 +331,7 @@ export default function AcompanharRotaPage() {
         .card-header-text {
           font-size: 11px;
           font-weight: 700;
-          color: #1b3f63;
+          color: #01233F;
           letter-spacing: 1.2px;
           text-transform: uppercase;
         }
@@ -359,13 +353,13 @@ export default function AcompanharRotaPage() {
           border-radius: 10px;
           cursor: pointer;
           font-family: 'DM Sans', sans-serif;
-          font-size: 13px;
+          font-size: 14px;
           font-weight: 500;
           color: #b0bac6;
           transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
         }
 
-        .dropdown-trigger.has-value { color: #1b3f63; }
+        .dropdown-trigger.has-value { color: #01233F; }
 
         .dropdown-trigger.open {
           border-color: #f1bb13;
@@ -389,14 +383,14 @@ export default function AcompanharRotaPage() {
           z-index: 20;
           overflow-y: auto;
           max-height: 180px;
-          box-shadow: 0 8px 20px rgba(27,63,99,0.1);
+          box-shadow: 0 8px 20px rgba(1,35,63,0.1);
         }
 
         .dropdown-item {
           padding: 11px 13px;
-          font-size: 12px;
+          font-size: 13px;
           font-weight: 500;
-          color: #1b3f63;
+          color: #01233F;
           cursor: pointer;
           border-bottom: 1px solid #f4f6fa;
           transition: background 0.15s;
@@ -417,11 +411,12 @@ export default function AcompanharRotaPage() {
         .label {
           font-size: 10px;
           font-weight: 700;
-          color: #1b3f63;
+          color: #01233F;
           letter-spacing: 1.2px;
           text-transform: uppercase;
         }
 
+        /* font-size: 16px evita zoom automático no iOS/Android */
         .textarea {
           width: 100%;
           padding: 11px 13px;
@@ -429,8 +424,8 @@ export default function AcompanharRotaPage() {
           border: 1.5px solid #e2e6ea;
           border-radius: 10px;
           font-family: 'DM Sans', sans-serif;
-          font-size: 13px;
-          color: #1b3f63;
+          font-size: 16px;
+          color: #01233F;
           outline: none;
           resize: vertical;
           min-height: 80px;
@@ -443,7 +438,7 @@ export default function AcompanharRotaPage() {
           box-shadow: 0 0 0 3px rgba(241,187,19,0.12);
         }
 
-        .textarea::placeholder { color: #b0bac6; font-size: 12px; }
+        .textarea::placeholder { color: #b0bac6; font-size: 13px; }
         .textarea:disabled { opacity: 0.6; }
 
         /* ── Submit ── */
@@ -456,7 +451,7 @@ export default function AcompanharRotaPage() {
           font-size: 12px;
           font-weight: 700;
           letter-spacing: 1.5px;
-          color: #1b3f63;
+          color: #01233F;
           text-transform: uppercase;
           cursor: pointer;
           font-family: 'DM Sans', sans-serif;
@@ -480,15 +475,15 @@ export default function AcompanharRotaPage() {
 
         .btn-spinner {
           width: 14px; height: 14px;
-          border: 2px solid rgba(27,63,99,0.2);
-          border-top-color: #1b3f63;
+          border: 2px solid rgba(1,35,63,0.2);
+          border-top-color: #01233F;
           border-radius: 50%;
           animation: spin 0.6s linear infinite;
         }
 
         /* ── Footer ── */
         .footer {
-          background: #1b3f63;
+          background: #01233F;
           border-top: 2px solid #f1bb13;
           padding: 13px;
           text-align: center;
@@ -505,7 +500,7 @@ export default function AcompanharRotaPage() {
       <div className="shell">
         <div className="phone">
 
-          {/* ── Topbar: voltar + "Rota - nome" ── */}
+          {/* ── Topbar ── */}
           <div className="topbar">
             <button className="back-btn" onClick={() => router.push('/dashboard')}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -535,7 +530,7 @@ export default function AcompanharRotaPage() {
 
               {!loading && rota && (
                 <>
-                  {/* ── Mapa centralizado ── */}
+                  {/* ── Mapa ── */}
                   <div className="map-wrap">
                     <MapComponent
                       startPoint={{
@@ -552,7 +547,7 @@ export default function AcompanharRotaPage() {
                     />
                   </div>
 
-                  {/* ── Info da rota (saída e chegada) ── */}
+                  {/* ── Info da rota ── */}
                   <div className="route-info-card">
                     <div className="route-info-row">
                       <div className="route-info-dot dot-start" />
