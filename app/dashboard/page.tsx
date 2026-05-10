@@ -41,7 +41,6 @@ export default function DashboardPage() {
       setLoadingRoutes(true)
       setErrorRoutes(null)
       const data = await routesService.getRoutes()
-      // Backend agora retorna apenas rotas do motorista autenticado
       setRotas(Array.isArray(data) ? data : [])
     } catch (error: any) {
       setErrorRoutes('Erro ao carregar rotas')
@@ -65,13 +64,11 @@ export default function DashboardPage() {
       return
     }
 
-    // Limite real: 3MB no arquivo original (base64 aumenta ~33%)
     if (proofOfPayment.size > 3 * 1024 * 1024) {
       setExpenseError('📸 Arquivo muito grande! Use uma imagem menor que 3MB.')
       return
     }
 
-    // Só aceita imagem
     if (!proofOfPayment.type.startsWith('image/')) {
       setExpenseError('⚠️ Envie apenas imagens (JPG, PNG, WEBP).')
       return
@@ -87,7 +84,6 @@ export default function DashboardPage() {
         reader.readAsDataURL(proofOfPayment)
       })
 
-      // Checa tamanho do base64 gerado (limite seguro: ~4MB de string)
       if (base64String.length > 4 * 1024 * 1024) {
         setExpenseError('📸 Imagem ainda muito grande após conversão. Use uma imagem menor.')
         setEnviando(false)
@@ -170,369 +166,500 @@ export default function DashboardPage() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap');
 
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-          color: #1A2B4A;
+        *, *::before, *::after {
+          margin: 0; padding: 0; box-sizing: border-box;
         }
 
         html, body {
           height: 100%;
-          font-family: 'Montserrat', sans-serif;
-          background-color: #e8e8e8;
+          font-family: 'DM Sans', sans-serif;
+          background: #01233F;
         }
 
         .screen {
           width: 100%;
-          max-width: 390px;
+          max-width: 430px;
           min-height: 100vh;
-          background-color: #F4F6FA;
+          background: #f0f2f5;
           display: flex;
           flex-direction: column;
           margin: 0 auto;
         }
 
+        /* ── Header ── */
         .header {
-          background: #ffffff;
-          padding: 4px 12px;
-          border-bottom: 3px solid #F5B800;
+          background: #01233F;
+          padding: 0 20px;
+          height: 60px;
           display: flex;
           align-items: center;
           justify-content: space-between;
-          min-height: 32px;
+          border-bottom: 3px solid #f1bb13;
+          position: sticky;
+          top: 0;
+          z-index: 50;
         }
 
-        .footer {
-          background: #ffffff;
-          padding: 16px 24px;
-          border-top: 2px solid #F5B800;
+        .header-brand {
           display: flex;
           align-items: center;
-          justify-content: center;
-          margin-top: auto;
+          gap: 10px;
         }
 
-        .footer p {
-          font-size: 10px;
-          color: #8A99B3;
-          text-align: center;
-          margin: 0;
-        }
-
-        .logoWrapper {
-          display: flex;
-          align-items: center;
-        }
-
-        .logoutBtn {
-          background: transparent;
-          border: none;
-          cursor: pointer;
-          padding: 4px 6px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 6px;
-          transition: background 0.2s;
-          color: #1A2B4A;
-          font-weight: 700;
+        .header-title {
           font-size: 16px;
+          font-weight: 700;
+          color: #fff;
+          letter-spacing: -0.3px;
         }
 
-        .logoutBtn:hover {
-          background: #f0f4fa;
+        .header-sub {
+          font-size: 9px;
+          color: rgba(255,255,255,0.4);
+          letter-spacing: 1px;
+          text-transform: uppercase;
         }
 
+        .logout-btn {
+          background: rgba(241,187,19,0.12);
+          border: 1px solid rgba(241,187,19,0.25);
+          color: #f1bb13;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.5px;
+          text-transform: uppercase;
+          padding: 7px 14px;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: background 0.15s;
+        }
+
+        .logout-btn:hover {
+          background: rgba(241,187,19,0.2);
+        }
+
+        /* ── Content ── */
         .content {
-          padding: 24px;
+          padding: 20px 16px;
           display: flex;
           flex-direction: column;
-          gap: 20px;
-          overflow-y: auto;
+          gap: 16px;
           flex: 1;
+          overflow-y: auto;
         }
 
-        .welcomeSection {
-          text-align: left;
-          margin-bottom: 8px;
+        /* ── Welcome ── */
+        .welcome {
+          padding: 4px 0 8px;
         }
 
-        .welcomeLabel {
-          font-size: 11px;
+        .welcome-label {
+          font-size: 10px;
           font-weight: 600;
-          color: #8A99B3;
-          letter-spacing: 1px;
+          color: #6b7a8d;
+          letter-spacing: 1.5px;
           text-transform: uppercase;
           margin-bottom: 4px;
         }
 
-        .welcomeName {
-          font-size: 20px;
-          font-weight: 900;
-          color: #1A2B4A;
-          letter-spacing: 0.5px;
+        .welcome-name {
+          font-size: 22px;
+          font-weight: 800;
+          color: #01233F;
+          letter-spacing: -0.5px;
         }
 
+        /* ── Card ── */
         .card {
-          width: 100%;
-          background: #ffffff;
+          background: #fff;
           border-radius: 16px;
-          padding: 24px;
-          box-shadow: 0 4px 20px rgba(26, 43, 74, 0.08);
+          padding: 20px;
+          box-shadow: 0 4px 20px rgba(1,35,63,0.07), 0 1px 4px rgba(1,35,63,0.04);
+          border: 1px solid #e2e6ea;
         }
 
-        .cardTitle {
-          font-size: 16px;
-          font-weight: 900;
-          color: #1A2B4A;
-          text-align: center;
+        .card-title {
+          font-size: 11px;
+          font-weight: 700;
+          color: #01233F;
+          letter-spacing: 1.5px;
           text-transform: uppercase;
-          letter-spacing: 2px;
-          margin-bottom: 20px;
+          margin-bottom: 16px;
           padding-bottom: 12px;
-          border-bottom: 2px solid #F5B800;
-        }
-
-        .rotasContainer {
+          border-bottom: 2px solid #f1bb13;
           display: flex;
           align-items: center;
-          gap: 12px;
-          position: relative;
+          gap: 8px;
         }
 
-        .rotasCarousel {
-          flex: 1;
+        .card-title-icon {
+          width: 28px;
+          height: 28px;
+          background: rgba(241,187,19,0.12);
+          border-radius: 7px;
           display: flex;
           align-items: center;
-          gap: 12px;
-          overflow: hidden;
-        }
-
-        .rotaItem {
-          background: linear-gradient(135deg, #f8f9fc 0%, #ffffff 100%);
-          border-left: 4px solid #F5B800;
-          border-radius: 10px;
-          padding: 14px;
-          cursor: pointer;
-          transition: all 0.2s;
-          border: 1.5px solid #E8ECF2;
-          min-width: 100%;
+          justify-content: center;
           flex-shrink: 0;
         }
 
-        .rotaItem:hover {
-          box-shadow: 0 4px 16px rgba(245, 184, 0, 0.15);
-          border-color: #F5B800;
-          transform: translateX(4px);
+        /* ── Routes carousel ── */
+        .routes-container {
+          display: flex;
+          align-items: center;
+          gap: 10px;
         }
 
-        .navButton {
-          background: #1A2B4A;
-          color: #F5B800;
-          border: none;
+        .nav-btn {
           width: 36px;
           height: 36px;
           border-radius: 50%;
+          background: #01233F;
+          color: #f1bb13;
+          border: none;
           cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
           font-size: 18px;
-          font-weight: bold;
-          transition: all 0.2s;
+          font-weight: 700;
           flex-shrink: 0;
+          transition: all 0.15s;
         }
 
-        .navButton:hover {
-          background: #F5B800;
-          color: #1A2B4A;
-          box-shadow: 0 4px 12px rgba(245, 184, 0, 0.3);
+        .nav-btn:hover:not(:disabled) {
+          background: #f1bb13;
+          color: #01233F;
+          box-shadow: 0 4px 12px rgba(241,187,19,0.3);
         }
 
-        .navButton:disabled {
-          opacity: 0.5;
+        .nav-btn:disabled {
+          opacity: 0.35;
           cursor: not-allowed;
         }
 
-        .rotaTop {
+        .routes-carousel {
+          flex: 1;
+          overflow: hidden;
+        }
+
+        .route-item {
+          background: #f7f8fa;
+          border-left: 4px solid #f1bb13;
+          border-radius: 10px;
+          padding: 14px;
+          cursor: pointer;
+          transition: all 0.2s;
+          border: 1.5px solid #e2e6ea;
+          border-left: 4px solid #f1bb13;
+        }
+
+        .route-item:hover {
+          box-shadow: 0 4px 16px rgba(241,187,19,0.15);
+          border-color: #f1bb13;
+          transform: translateY(-1px);
+        }
+
+        .route-top {
           display: flex;
           align-items: center;
           gap: 10px;
-          margin-bottom: 8px;
+          margin-bottom: 10px;
         }
 
-        .rotaTime {
-          background: #1A2B4A;
-          color: #F5B800;
-          font-size: 12px;
-          font-weight: 900;
-          padding: 4px 8px;
+        .route-badge {
+          background: #01233F;
+          color: #f1bb13;
+          font-size: 11px;
+          font-weight: 700;
+          padding: 4px 10px;
           border-radius: 6px;
-          letter-spacing: 1px;
-          min-width: 50px;
-          text-align: center;
-        }
-
-        .rotaName {
-          font-size: 12px;
-          font-weight: 800;
-          color: #1A2B4A;
-          text-transform: uppercase;
           letter-spacing: 0.5px;
-        }
-
-        .loadingText {
+          min-width: 52px;
           text-align: center;
-          color: #8A99B3;
-          font-size: 12px;
-          padding: 20px;
+          flex-shrink: 0;
         }
 
-        .errorBox {
-          background: linear-gradient(135deg, #ffe0e0 0%, #ffcccc 100%);
-          border: 2px solid #ff6b6b;
-          color: #cc0000;
-          padding: 14px 16px;
-          border-radius: 10px;
+        .route-name {
           font-size: 13px;
+          font-weight: 700;
+          color: #01233F;
+          letter-spacing: 0.3px;
+        }
+
+        .route-details {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+
+        .route-detail-row {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 12px;
+          color: #6b7a8d;
+        }
+
+        .route-detail-label {
           font-weight: 600;
+          color: #01233F;
+          min-width: 50px;
+        }
+
+        .route-counter {
+          margin-top: 10px;
+          font-size: 10px;
+          color: #b0bac6;
           text-align: center;
-          box-shadow: 0 4px 12px rgba(255, 107, 107, 0.2);
+          font-weight: 500;
+        }
+
+        .loading-text {
+          text-align: center;
+          color: #6b7a8d;
+          font-size: 13px;
+          padding: 20px 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+        }
+
+        .loading-spinner {
+          width: 16px;
+          height: 16px;
+          border: 2px solid rgba(241,187,19,0.2);
+          border-top-color: #f1bb13;
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+          flex-shrink: 0;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .error-box {
+          background: #fde8e8;
+          border: 1px solid #fca5a5;
+          color: #7f1d1d;
+          padding: 12px 16px;
+          border-radius: 10px;
+          font-size: 12px;
+          font-weight: 500;
+          text-align: center;
           animation: slideIn 0.3s ease-out;
         }
 
         @keyframes slideIn {
-          from { opacity: 0; transform: translateY(-10px); }
-          to { opacity: 1; transform: translateY(0); }
+          from { opacity: 0; transform: translateY(-8px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
 
-        .formGroup {
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-          margin-bottom: 14px;
-        }
-
-        .label {
-          font-size: 11px;
-          font-weight: 700;
-          color: #1A2B4A;
-          letter-spacing: 1.5px;
-          text-transform: uppercase;
-        }
-
-        .input {
-          width: 100%;
-          padding: 12px 14px;
-          background: #F4F6FA;
-          border: 1.5px solid #E0E6F0;
-          border-radius: 8px;
-          font-family: 'Montserrat', sans-serif;
-          font-size: 13px;
-          color: #1A2B4A;
-          outline: none;
-          transition: all 0.2s;
-        }
-
-        .input:focus {
-          border-color: #F5B800;
-          background: #ffffff;
-          box-shadow: 0 0 0 3px rgba(245, 184, 0, 0.1);
-        }
-
-        .input::placeholder {
-          color: #B8C2D0;
-        }
-
-        .twoColumns {
+        /* ── Expense Form ── */
+        .two-col {
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 12px;
         }
 
-        .fileHint {
-          font-size: 11px;
-          color: #B8C2D0;
-          margin-top: 4px;
+        .field {
+          display: flex;
+          flex-direction: column;
+          gap: 7px;
+          margin-bottom: 14px;
         }
 
-        .submitBtn {
-          width: 100%;
-          padding: 14px;
-          background: #F5B800;
-          color: #1A2B4A;
-          font-family: 'Montserrat', sans-serif;
-          font-size: 12px;
-          font-weight: 900;
-          letter-spacing: 1.5px;
+        .field:last-child {
+          margin-bottom: 0;
+        }
+
+        .label {
+          font-size: 10px;
+          font-weight: 700;
+          color: #01233F;
+          letter-spacing: 1.2px;
           text-transform: uppercase;
-          border: none;
+        }
+
+        .input {
+          width: 100%;
+          height: 48px;
+          border: 1.5px solid #e2e6ea;
           border-radius: 10px;
-          cursor: pointer;
-          transition: all 0.2s;
-          margin-top: 8px;
+          padding: 0 14px;
+          font-size: 13px;
+          font-weight: 400;
+          color: #01233F;
+          background: #f7f8fa;
+          font-family: 'DM Sans', sans-serif;
+          outline: none;
+          transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
         }
 
-        .submitBtn:hover:not(:disabled) {
-          background: #dca000;
-          box-shadow: 0 4px 12px rgba(245, 184, 0, 0.3);
+        .input::placeholder {
+          color: #b0bac6;
+          font-size: 12px;
         }
 
-        .submitBtn:active:not(:disabled) {
-          transform: scale(0.98);
+        .input:focus {
+          border-color: #f1bb13;
+          background: #fff;
+          box-shadow: 0 0 0 3px rgba(241,187,19,0.12);
         }
 
-        .submitBtn:disabled {
+        .input:disabled {
           opacity: 0.6;
+        }
+
+        .file-hint {
+          font-size: 10px;
+          color: #b0bac6;
+          margin-top: 2px;
+        }
+
+        .file-selected {
+          font-size: 11px;
+          color: #6b7a8d;
+          margin-top: 4px;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+
+        .file-selected::before {
+          content: '✓';
+          color: #22c55e;
+          font-weight: 700;
+        }
+
+        .submit-btn {
+          width: 100%;
+          height: 52px;
+          background: #f1bb13;
+          border: none;
+          border-radius: 12px;
+          font-size: 12px;
+          font-weight: 700;
+          letter-spacing: 1.5px;
+          color: #01233F;
+          text-transform: uppercase;
+          cursor: pointer;
+          font-family: 'DM Sans', sans-serif;
+          transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+          margin-top: 6px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+          background: #d9a700;
+          box-shadow: 0 4px 16px rgba(241,187,19,0.35);
+          transform: translateY(-1px);
+        }
+
+        .submit-btn:active:not(:disabled) {
+          transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+          opacity: 0.65;
           cursor: not-allowed;
+          transform: none;
         }
 
-        .submitBtn.success {
-          background: #28a745;
-          color: #ffffff;
+        .submit-btn.success {
+          background: #22c55e;
+          color: #fff;
         }
 
-        @media (max-width: 480px) {
-          .content { padding: 16px; }
-          .card { padding: 16px; }
-          .welcomeName { font-size: 18px; }
+        .btn-spinner {
+          width: 14px;
+          height: 14px;
+          border: 2px solid rgba(1,35,63,0.2);
+          border-top-color: #01233F;
+          border-radius: 50%;
+          animation: spin 0.6s linear infinite;
+        }
+
+        /* ── Footer ── */
+        .footer {
+          background: #01233F;
+          border-top: 2px solid #f1bb13;
+          padding: 14px 24px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .footer p {
+          font-size: 10px;
+          color: rgba(255,255,255,0.35);
+          font-family: 'DM Sans', sans-serif;
         }
       `}</style>
 
       <div className="screen">
 
         <header className="header">
-          <div className="logoWrapper">
-            <Image src="/logo.png" alt="Omnibus" width={90} height={28} />
+          <div className="header-brand">
+            <svg width="26" height="20" viewBox="0 0 44 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="0" y="0" width="38" height="20" rx="3" stroke="white" strokeWidth="1.8"/>
+              <rect x="3" y="4" width="7" height="7" rx="1" stroke="white" strokeWidth="1.5"/>
+              <rect x="13" y="4" width="7" height="7" rx="1" stroke="white" strokeWidth="1.5"/>
+              <rect x="23" y="4" width="7" height="7" rx="1" stroke="white" strokeWidth="1.5"/>
+              <rect x="38" y="5" width="3" height="10" rx="1.5" stroke="white" strokeWidth="1.5"/>
+              <circle cx="8" cy="24" r="4" stroke="white" strokeWidth="1.8"/>
+              <circle cx="30" cy="24" r="4" stroke="white" strokeWidth="1.8"/>
+              <line x1="0" y1="20" x2="38" y2="20" stroke="white" strokeWidth="1.2" strokeOpacity="0.4"/>
+            </svg>
+            <div>
+              <div className="header-title">Omnibus</div>
+              <div className="header-sub">Gestão Escolar</div>
+            </div>
           </div>
-          <button className="logoutBtn" onClick={handleLogout} title="Fazer logout">
-            Sair
-          </button>
+          <button className="logout-btn" onClick={handleLogout}>Sair</button>
         </header>
 
         <div className="content">
 
-          <div className="welcomeSection">
-            <div className="welcomeLabel">Bem-vindo de volta</div>
-            <div className="welcomeName">{driver?.name || 'Motorista'}</div>
+          <div className="welcome">
+            <div className="welcome-label">Bem-vindo de volta</div>
+            <div className="welcome-name">{driver?.name || 'Motorista'}</div>
           </div>
 
+          {/* ── Rotas ── */}
           <div className="card">
-            <div className="cardTitle">Suas Rotas</div>
+            <div className="card-title">
+              <div className="card-title-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="#f1bb13">
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/>
+                </svg>
+              </div>
+              Suas Rotas
+            </div>
 
-            {loadingRoutes && <p className="loadingText">Carregando suas rotas...</p>}
-            {errorRoutes && <div className="errorBox">{errorRoutes}</div>}
+            {loadingRoutes && (
+              <div className="loading-text">
+                <div className="loading-spinner" />
+                Carregando rotas...
+              </div>
+            )}
+
+            {errorRoutes && <div className="error-box">{errorRoutes}</div>}
+
             {!loadingRoutes && rotas.length === 0 && (
-              <p className="loadingText">Nenhuma rota prevista no momento</p>
+              <div className="loading-text">Nenhuma rota prevista no momento</div>
             )}
 
             {!loadingRoutes && rotas.length > 0 && (
-              <div className="rotasContainer">
+              <div className="routes-container">
                 <button
-                  className="navButton"
+                  className="nav-btn"
                   onClick={goToPrevRota}
                   disabled={rotas.length <= 1}
                   aria-label="Rota anterior"
@@ -540,35 +667,42 @@ export default function DashboardPage() {
                   ‹
                 </button>
 
-                <div className="rotasCarousel">
+                <div className="routes-carousel">
                   {rotas.map((rota, index) =>
                     index === currentRotaIndex ? (
                       <div
                         key={rota.id}
-                        className="rotaItem"
+                        className="route-item"
                         onClick={() => router.push(`/acompanharRota/${rota.id}`)}
                         role="button"
                         tabIndex={0}
                       >
-                        <div className="rotaTop">
-                          <span className="rotaTime">{formatarHorario(rota.departure_time || rota.start_time)}</span>
-                          <span className="rotaName">{rota.name || 'Rota'}</span>
+                        <div className="route-top">
+                          <span className="route-badge">{formatarHorario(rota.departure_time || rota.start_time)}</span>
+                          <span className="route-name">{rota.name || 'Rota'}</span>
                         </div>
-                        <div style={{ fontSize: '11px', color: '#7A8AA0' }}>
-                          <strong>Partida:</strong> {formatarHorario(rota.departure_time || rota.start_time)}
-                          <div style={{ marginTop: '4px' }}><strong>Início:</strong> {typeof rota.start_point === 'object' ? rota.start_point?.name : rota.start_point}</div>
-                          <div style={{ marginTop: '4px' }}><strong>Fim:</strong> {typeof rota.end_point === 'object' ? rota.end_point?.name : rota.end_point}</div>
+                        <div className="route-details">
+                          <div className="route-detail-row">
+                            <span className="route-detail-label">Partida:</span>
+                            <span>{formatarHorario(rota.departure_time || rota.start_time)}</span>
+                          </div>
+                          <div className="route-detail-row">
+                            <span className="route-detail-label">Início:</span>
+                            <span>{typeof rota.start_point === 'object' ? rota.start_point?.name : rota.start_point}</span>
+                          </div>
+                          <div className="route-detail-row">
+                            <span className="route-detail-label">Fim:</span>
+                            <span>{typeof rota.end_point === 'object' ? rota.end_point?.name : rota.end_point}</span>
+                          </div>
                         </div>
-                        <div style={{ marginTop: '8px', fontSize: '10px', color: '#B8C2D0', textAlign: 'center' }}>
-                          {currentRotaIndex + 1} / {rotas.length}
-                        </div>
+                        <div className="route-counter">{currentRotaIndex + 1} / {rotas.length}</div>
                       </div>
                     ) : null
                   )}
                 </div>
 
                 <button
-                  className="navButton"
+                  className="nav-btn"
                   onClick={goToNextRota}
                   disabled={rotas.length <= 1}
                   aria-label="Próxima rota"
@@ -579,16 +713,24 @@ export default function DashboardPage() {
             )}
           </div>
 
+          {/* ── Despesa ── */}
           <div className="card">
-            <div className="cardTitle">Cadastrar Despesa</div>
+            <div className="card-title">
+              <div className="card-title-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="#f1bb13">
+                  <path d="M12 2a1 1 0 0 1 1 1v1.07C16.39 4.56 19 6.58 19 9c0 .55-.45 1-1 1s-1-.45-1-1c0-1.3-2.06-2.5-5-2.5S7 7.7 7 9s2.06 2.5 5 2.5c3.87 0 6 1.93 6 4.5 0 2.42-2.61 4.44-6 4.93V22a1 1 0 1 1-2 0v-1.07C6.61 20.44 4 18.42 4 16c0-.55.45-1 1-1s1 .45 1 1c0 1.3 2.06 2.5 5 2.5s5-1.2 5-2.5-2.06-2.5-5-2.5c-3.87 0-6-1.93-6-4.5C5 6.58 7.61 4.56 11 4.07V3a1 1 0 0 1 1-1z"/>
+                </svg>
+              </div>
+              Cadastrar Despesa
+            </div>
 
             {expenseError && (
-              <div className="errorBox" style={{ marginBottom: '16px' }}>{expenseError}</div>
+              <div className="error-box" style={{ marginBottom: '16px' }}>{expenseError}</div>
             )}
 
             <form onSubmit={handleEnviarDespesa}>
-              <div className="twoColumns">
-                <div className="formGroup">
+              <div className="two-col">
+                <div className="field">
                   <label className="label">Placa *</label>
                   <input
                     type="text"
@@ -601,8 +743,8 @@ export default function DashboardPage() {
                     required
                   />
                 </div>
-                <div className="formGroup">
-                  <label className="label">Valor (R$) *</label>
+                <div className="field">
+                  <label className="label">Valor *</label>
                   <input
                     type="text"
                     className="input"
@@ -615,7 +757,7 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <div className="formGroup">
+              <div className="field">
                 <label className="label">Descrição</label>
                 <input
                   type="text"
@@ -627,29 +769,29 @@ export default function DashboardPage() {
                 />
               </div>
 
-              <div className="formGroup">
-                <label className="label">Comprovante de Pagamento</label>
+              <div className="field">
+                <label className="label">Comprovante</label>
                 <input
                   type="file"
                   className="input"
+                  style={{ paddingTop: '12px', height: 'auto', minHeight: '48px' }}
                   accept="image/*"
                   onChange={(e) => setProofOfPayment(e.target.files?.[0] || null)}
                   disabled={enviando}
                 />
-                <span className="fileHint">Apenas imagens (JPG, PNG, WEBP) — máx. 3MB</span>
+                <span className="file-hint">Apenas imagens (JPG, PNG, WEBP) — máx. 3MB</span>
                 {proofOfPayment && (
-                  <div style={{ fontSize: '12px', color: '#7A8AA0', marginTop: '4px' }}>
-                    ✓ {proofOfPayment.name}
-                  </div>
+                  <span className="file-selected">{proofOfPayment.name}</span>
                 )}
               </div>
 
               <button
                 type="submit"
-                className={`submitBtn${enviado ? ' success' : ''}`}
+                className={`submit-btn${enviado ? ' success' : ''}`}
                 disabled={enviando || enviado}
               >
-                {enviando ? '⏳ Enviando...' : enviado ? '✓ Enviado!' : 'Enviar Despesa'}
+                {enviando && <span className="btn-spinner" />}
+                {enviando ? 'Enviando...' : enviado ? '✓ Enviado!' : 'Enviar Despesa'}
               </button>
             </form>
           </div>
