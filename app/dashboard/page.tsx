@@ -385,26 +385,25 @@ export default function DashboardPage() {
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 6px;
+          gap: 8px;
           width: 100%;
           margin-top: 12px;
-          padding: 9px 0;
-          background: rgba(241,187,19,0.1);
-          border: 1.5px solid rgba(241,187,19,0.35);
+          padding: 11px 0;
+          background: #01233F;
+          border: none;
           border-radius: 8px;
           font-family: 'DM Sans', sans-serif;
           font-size: 11px;
           font-weight: 700;
-          color: #01233F;
+          color: #fff;
           letter-spacing: 0.8px;
           text-transform: uppercase;
           cursor: pointer;
-          transition: background 0.15s, border-color 0.15s;
+          transition: background 0.15s;
         }
 
         .ver-rota-btn:hover {
-          background: rgba(241,187,19,0.18);
-          border-color: #f1bb13;
+          background: #02315a;
         }
 
         .route-counter {
@@ -655,11 +654,11 @@ export default function DashboardPage() {
                                 className="ver-rota-btn"
                                 onClick={() => router.push(`/acompanharRota/${rota.id}`)}
                               >
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#01233F" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                                   <circle cx="12" cy="12" r="3"/>
                                 </svg>
-                                Clique aqui para ver a rota
+                                Clique aqui para ver dados da rota
                               </button>
 
                               <div className="route-counter">{currentRotaIndex + 1} / {rotas.length}</div>
