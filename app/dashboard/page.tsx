@@ -58,17 +58,14 @@ export default function DashboardPage() {
       setExpenseError('Preencha todos os campos obrigatórios')
       return
     }
-
     if (!proofOfPayment) {
       setExpenseError('Selecione um comprovante de pagamento')
       return
     }
-
     if (proofOfPayment.size > 3 * 1024 * 1024) {
       setExpenseError('📸 Arquivo muito grande! Use uma imagem menor que 3MB.')
       return
     }
-
     if (!proofOfPayment.type.startsWith('image/')) {
       setExpenseError('⚠️ Envie apenas imagens (JPG, PNG, WEBP).')
       return
@@ -145,177 +142,243 @@ export default function DashboardPage() {
     return time.substring(0, 5)
   }
 
-  const goToNextRota = () => {
-    setCurrentRotaIndex((prev) => (prev + 1) % rotas.length)
-  }
-
-  const goToPrevRota = () => {
-    setCurrentRotaIndex((prev) => (prev - 1 + rotas.length) % rotas.length)
-  }
+  const goToNextRota = () => setCurrentRotaIndex((prev) => (prev + 1) % rotas.length)
+  const goToPrevRota = () => setCurrentRotaIndex((prev) => (prev - 1 + rotas.length) % rotas.length)
 
   const handlePlateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const masked = maskPlate(e.target.value)
-    setVehicle_plate(masked)
+    setVehicle_plate(maskPlate(e.target.value))
   }
 
   const handleValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const masked = maskCurrency(e.target.value)
-    setValue(masked)
+    setValue(maskCurrency(e.target.value))
   }
 
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap');
 
-        *, *::before, *::after {
-          margin: 0; padding: 0; box-sizing: border-box;
-        }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         html, body {
           height: 100%;
           font-family: 'DM Sans', sans-serif;
-          background: #01233F;
+          background: #e8eaed;
         }
 
-        .screen {
-          width: 100%;
-          max-width: 430px;
+        /* ── Phone shell ── */
+        .shell {
           min-height: 100vh;
-          background: #f0f2f5;
+          display: flex;
+          align-items: flex-start;
+          justify-content: center;
+          padding: 0;
+          background: #e8eaed;
+        }
+
+        @media (min-width: 520px) {
+          .shell {
+            padding: 32px 0 48px;
+            align-items: flex-start;
+          }
+          .phone {
+            border-radius: 40px;
+            box-shadow:
+              0 0 0 10px #1a1a1a,
+              0 0 0 12px #2a2a2a,
+              0 32px 80px rgba(0,0,0,0.35);
+            overflow: hidden;
+          }
+          .phone::before {
+            content: '';
+            display: block;
+            width: 120px;
+            height: 6px;
+            background: #1a1a1a;
+            border-radius: 3px;
+            margin: 0 auto;
+            position: relative;
+            top: 14px;
+            z-index: 10;
+          }
+        }
+
+        .phone {
+          width: 100%;
+          max-width: 390px;
+          min-height: 100vh;
+          background: #ffffff;
           display: flex;
           flex-direction: column;
-          margin: 0 auto;
+          position: relative;
+          overflow: hidden;
+        }
+
+        @media (min-width: 520px) {
+          .phone { min-height: 820px; }
         }
 
         /* ── Header ── */
         .header {
           background: #01233F;
-          padding: 0 20px;
-          height: 60px;
+          border-bottom: 3px solid #f1bb13;
+          height: 64px;
           display: flex;
           align-items: center;
           justify-content: space-between;
-          border-bottom: 3px solid #f1bb13;
+          padding: 0 18px;
           position: sticky;
           top: 0;
           z-index: 50;
+          flex-shrink: 0;
         }
 
-        .header-brand {
+        .header-logo {
+          position: absolute;
+          left: 50%;
+          transform: translateX(-50%);
           display: flex;
           align-items: center;
-          gap: 10px;
-        }
-
-        .header-title {
-          font-size: 16px;
-          font-weight: 700;
-          color: #fff;
-          letter-spacing: -0.3px;
-        }
-
-        .header-sub {
-          font-size: 9px;
-          color: rgba(255,255,255,0.4);
-          letter-spacing: 1px;
-          text-transform: uppercase;
         }
 
         .logout-btn {
+          margin-left: auto;
           background: rgba(241,187,19,0.12);
-          border: 1px solid rgba(241,187,19,0.25);
+          border: 1px solid rgba(241,187,19,0.3);
           color: #f1bb13;
           font-family: 'DM Sans', sans-serif;
           font-size: 11px;
           font-weight: 700;
           letter-spacing: 0.5px;
           text-transform: uppercase;
-          padding: 7px 14px;
+          padding: 7px 13px;
           border-radius: 8px;
           cursor: pointer;
           transition: background 0.15s;
+          z-index: 1;
         }
 
-        .logout-btn:hover {
-          background: rgba(241,187,19,0.2);
-        }
+        .logout-btn:hover { background: rgba(241,187,19,0.22); }
 
-        /* ── Content ── */
+        /* ── Scroll content ── */
         .content {
-          padding: 20px 16px;
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
           flex: 1;
           overflow-y: auto;
+          background: #f4f6fa;
+          display: flex;
+          flex-direction: column;
+          gap: 0;
         }
 
-        /* ── Welcome ── */
-        .welcome {
-          padding: 4px 0 8px;
+        /* ── Welcome strip ── */
+        .welcome-strip {
+          background: #01233F;
+          padding: 18px 20px 22px;
+          position: relative;
+        }
+
+        .welcome-strip::after {
+          content: '';
+          position: absolute;
+          bottom: -16px;
+          left: 0; right: 0;
+          height: 20px;
+          background: #f4f6fa;
+          border-radius: 20px 20px 0 0;
         }
 
         .welcome-label {
           font-size: 10px;
           font-weight: 600;
-          color: #6b7a8d;
+          color: rgba(255,255,255,0.45);
           letter-spacing: 1.5px;
           text-transform: uppercase;
           margin-bottom: 4px;
         }
 
         .welcome-name {
-          font-size: 22px;
+          font-size: 20px;
           font-weight: 800;
-          color: #01233F;
-          letter-spacing: -0.5px;
+          color: #ffffff;
+          letter-spacing: -0.3px;
+        }
+
+        .welcome-tag {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          background: rgba(241,187,19,0.15);
+          border: 1px solid rgba(241,187,19,0.25);
+          border-radius: 20px;
+          padding: 3px 10px;
+          margin-top: 8px;
+        }
+
+        .welcome-tag span {
+          font-size: 10px;
+          font-weight: 600;
+          color: #f1bb13;
+          letter-spacing: 0.5px;
+        }
+
+        /* ── Sections ── */
+        .sections {
+          padding: 28px 16px 24px;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
         }
 
         /* ── Card ── */
         .card {
-          background: #fff;
+          background: #ffffff;
           border-radius: 16px;
-          padding: 20px;
-          box-shadow: 0 4px 20px rgba(1,35,63,0.07), 0 1px 4px rgba(1,35,63,0.04);
           border: 1px solid #e2e6ea;
+          overflow: hidden;
+          box-shadow: 0 2px 12px rgba(1,35,63,0.06);
         }
 
-        .card-title {
-          font-size: 11px;
-          font-weight: 700;
-          color: #01233F;
-          letter-spacing: 1.5px;
-          text-transform: uppercase;
-          margin-bottom: 16px;
-          padding-bottom: 12px;
-          border-bottom: 2px solid #f1bb13;
+        .card-header {
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 10px;
+          padding: 16px 18px 14px;
+          border-bottom: 1px solid #f0f2f5;
         }
 
-        .card-title-icon {
-          width: 28px;
-          height: 28px;
+        .card-header-icon {
+          width: 32px;
+          height: 32px;
           background: rgba(241,187,19,0.12);
-          border-radius: 7px;
+          border-radius: 9px;
           display: flex;
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
         }
 
-        /* ── Routes carousel ── */
-        .routes-container {
+        .card-header-text {
+          font-size: 11px;
+          font-weight: 700;
+          color: #01233F;
+          letter-spacing: 1.2px;
+          text-transform: uppercase;
+        }
+
+        .card-body {
+          padding: 16px 18px;
+        }
+
+        /* ── Routes ── */
+        .routes-nav {
           display: flex;
           align-items: center;
           gap: 10px;
         }
 
         .nav-btn {
-          width: 36px;
-          height: 36px;
+          width: 34px;
+          height: 34px;
           border-radius: 50%;
           background: #01233F;
           color: #f1bb13;
@@ -324,49 +387,41 @@ export default function DashboardPage() {
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 18px;
+          font-size: 20px;
           font-weight: 700;
           flex-shrink: 0;
           transition: all 0.15s;
+          line-height: 1;
         }
 
         .nav-btn:hover:not(:disabled) {
           background: #f1bb13;
           color: #01233F;
-          box-shadow: 0 4px 12px rgba(241,187,19,0.3);
         }
 
-        .nav-btn:disabled {
-          opacity: 0.35;
-          cursor: not-allowed;
-        }
+        .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
-        .routes-carousel {
+        .route-card {
           flex: 1;
-          overflow: hidden;
-        }
-
-        .route-item {
           background: #f7f8fa;
+          border: 1.5px solid #e2e6ea;
           border-left: 4px solid #f1bb13;
           border-radius: 10px;
           padding: 14px;
           cursor: pointer;
-          transition: all 0.2s;
-          border: 1.5px solid #e2e6ea;
-          border-left: 4px solid #f1bb13;
+          transition: all 0.18s;
         }
 
-        .route-item:hover {
-          box-shadow: 0 4px 16px rgba(241,187,19,0.15);
+        .route-card:hover {
           border-color: #f1bb13;
+          box-shadow: 0 4px 14px rgba(241,187,19,0.15);
           transform: translateY(-1px);
         }
 
         .route-top {
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 8px;
           margin-bottom: 10px;
         }
 
@@ -375,11 +430,9 @@ export default function DashboardPage() {
           color: #f1bb13;
           font-size: 11px;
           font-weight: 700;
-          padding: 4px 10px;
+          padding: 3px 9px;
           border-radius: 6px;
           letter-spacing: 0.5px;
-          min-width: 52px;
-          text-align: center;
           flex-shrink: 0;
         }
 
@@ -387,51 +440,46 @@ export default function DashboardPage() {
           font-size: 13px;
           font-weight: 700;
           color: #01233F;
-          letter-spacing: 0.3px;
         }
 
-        .route-details {
+        .route-row {
           display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-
-        .route-detail-row {
-          display: flex;
-          align-items: center;
+          align-items: flex-start;
           gap: 6px;
           font-size: 12px;
           color: #6b7a8d;
+          margin-bottom: 4px;
         }
 
-        .route-detail-label {
-          font-weight: 600;
+        .route-row:last-child { margin-bottom: 0; }
+
+        .route-row strong {
           color: #01233F;
-          min-width: 50px;
+          font-weight: 600;
+          min-width: 48px;
+          flex-shrink: 0;
         }
 
         .route-counter {
-          margin-top: 10px;
+          text-align: center;
           font-size: 10px;
           color: #b0bac6;
-          text-align: center;
           font-weight: 500;
+          margin-top: 10px;
         }
 
-        .loading-text {
-          text-align: center;
-          color: #6b7a8d;
-          font-size: 13px;
-          padding: 20px 0;
+        .loading-row {
           display: flex;
           align-items: center;
           justify-content: center;
           gap: 8px;
+          padding: 16px 0;
+          color: #6b7a8d;
+          font-size: 13px;
         }
 
-        .loading-spinner {
-          width: 16px;
-          height: 16px;
+        .spinner {
+          width: 15px; height: 15px;
           border: 2px solid rgba(241,187,19,0.2);
           border-top-color: #f1bb13;
           border-radius: 50%;
@@ -441,24 +489,31 @@ export default function DashboardPage() {
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        .empty-state {
+          text-align: center;
+          color: #b0bac6;
+          font-size: 13px;
+          padding: 16px 0;
+        }
+
+        /* ── Form ── */
         .error-box {
           background: #fde8e8;
           border: 1px solid #fca5a5;
           color: #7f1d1d;
-          padding: 12px 16px;
+          padding: 11px 14px;
           border-radius: 10px;
           font-size: 12px;
           font-weight: 500;
-          text-align: center;
-          animation: slideIn 0.3s ease-out;
+          margin-bottom: 14px;
+          animation: slideIn 0.25s ease-out;
         }
 
         @keyframes slideIn {
-          from { opacity: 0; transform: translateY(-8px); }
+          from { opacity: 0; transform: translateY(-6px); }
           to   { opacity: 1; transform: translateY(0); }
         }
 
-        /* ── Expense Form ── */
         .two-col {
           display: grid;
           grid-template-columns: 1fr 1fr;
@@ -468,12 +523,8 @@ export default function DashboardPage() {
         .field {
           display: flex;
           flex-direction: column;
-          gap: 7px;
-          margin-bottom: 14px;
-        }
-
-        .field:last-child {
-          margin-bottom: 0;
+          gap: 6px;
+          margin-bottom: 13px;
         }
 
         .label {
@@ -486,12 +537,11 @@ export default function DashboardPage() {
 
         .input {
           width: 100%;
-          height: 48px;
+          height: 46px;
           border: 1.5px solid #e2e6ea;
           border-radius: 10px;
-          padding: 0 14px;
+          padding: 0 13px;
           font-size: 13px;
-          font-weight: 400;
           color: #01233F;
           background: #f7f8fa;
           font-family: 'DM Sans', sans-serif;
@@ -499,10 +549,7 @@ export default function DashboardPage() {
           transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
         }
 
-        .input::placeholder {
-          color: #b0bac6;
-          font-size: 12px;
-        }
+        .input::placeholder { color: #b0bac6; font-size: 12px; }
 
         .input:focus {
           border-color: #f1bb13;
@@ -510,9 +557,7 @@ export default function DashboardPage() {
           box-shadow: 0 0 0 3px rgba(241,187,19,0.12);
         }
 
-        .input:disabled {
-          opacity: 0.6;
-        }
+        .input:disabled { opacity: 0.6; }
 
         .file-hint {
           font-size: 10px;
@@ -520,24 +565,16 @@ export default function DashboardPage() {
           margin-top: 2px;
         }
 
-        .file-selected {
+        .file-ok {
           font-size: 11px;
-          color: #6b7a8d;
-          margin-top: 4px;
-          display: flex;
-          align-items: center;
-          gap: 4px;
-        }
-
-        .file-selected::before {
-          content: '✓';
-          color: #22c55e;
-          font-weight: 700;
+          color: #16a34a;
+          font-weight: 600;
+          margin-top: 3px;
         }
 
         .submit-btn {
           width: 100%;
-          height: 52px;
+          height: 50px;
           background: #f1bb13;
           border: none;
           border-radius: 12px;
@@ -549,37 +586,25 @@ export default function DashboardPage() {
           cursor: pointer;
           font-family: 'DM Sans', sans-serif;
           transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
-          margin-top: 6px;
           display: flex;
           align-items: center;
           justify-content: center;
           gap: 8px;
+          margin-top: 4px;
         }
 
         .submit-btn:hover:not(:disabled) {
           background: #d9a700;
-          box-shadow: 0 4px 16px rgba(241,187,19,0.35);
+          box-shadow: 0 4px 14px rgba(241,187,19,0.35);
           transform: translateY(-1px);
         }
 
-        .submit-btn:active:not(:disabled) {
-          transform: translateY(0);
-        }
-
-        .submit-btn:disabled {
-          opacity: 0.65;
-          cursor: not-allowed;
-          transform: none;
-        }
-
-        .submit-btn.success {
-          background: #22c55e;
-          color: #fff;
-        }
+        .submit-btn:active:not(:disabled) { transform: translateY(0); }
+        .submit-btn:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
+        .submit-btn.success { background: #22c55e; color: #fff; }
 
         .btn-spinner {
-          width: 14px;
-          height: 14px;
+          width: 14px; height: 14px;
           border: 2px solid rgba(1,35,63,0.2);
           border-top-color: #01233F;
           border-radius: 50%;
@@ -590,217 +615,167 @@ export default function DashboardPage() {
         .footer {
           background: #01233F;
           border-top: 2px solid #f1bb13;
-          padding: 14px 24px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          padding: 13px;
+          text-align: center;
+          flex-shrink: 0;
         }
 
         .footer p {
           font-size: 10px;
-          color: rgba(255,255,255,0.35);
+          color: rgba(255,255,255,0.3);
           font-family: 'DM Sans', sans-serif;
         }
       `}</style>
 
-      <div className="screen">
+      <div className="shell">
+        <div className="phone">
 
-        <header className="header">
-          <div className="header-brand">
-            <svg width="26" height="20" viewBox="0 0 44 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="0" y="0" width="38" height="20" rx="3" stroke="white" strokeWidth="1.8"/>
-              <rect x="3" y="4" width="7" height="7" rx="1" stroke="white" strokeWidth="1.5"/>
-              <rect x="13" y="4" width="7" height="7" rx="1" stroke="white" strokeWidth="1.5"/>
-              <rect x="23" y="4" width="7" height="7" rx="1" stroke="white" strokeWidth="1.5"/>
-              <rect x="38" y="5" width="3" height="10" rx="1.5" stroke="white" strokeWidth="1.5"/>
-              <circle cx="8" cy="24" r="4" stroke="white" strokeWidth="1.8"/>
-              <circle cx="30" cy="24" r="4" stroke="white" strokeWidth="1.8"/>
-              <line x1="0" y1="20" x2="38" y2="20" stroke="white" strokeWidth="1.2" strokeOpacity="0.4"/>
-            </svg>
-            <div>
-              <div className="header-title">Omnibus</div>
-              <div className="header-sub">Gestão Escolar</div>
+          {/* ── Header ── */}
+          <header className="header">
+            <div className="header-logo">
+              <Image src="/logo.jpg" alt="Omnibus" width={110} height={36} style={{ objectFit: 'contain' }} />
             </div>
-          </div>
-          <button className="logout-btn" onClick={handleLogout}>Sair</button>
-        </header>
+            <button className="logout-btn" onClick={handleLogout}>Sair</button>
+          </header>
 
-        <div className="content">
+          {/* ── Scroll area ── */}
+          <div className="content">
 
-          <div className="welcome">
-            <div className="welcome-label">Bem-vindo de volta</div>
-            <div className="welcome-name">{driver?.name || 'Motorista'}</div>
-          </div>
-
-          {/* ── Rotas ── */}
-          <div className="card">
-            <div className="card-title">
-              <div className="card-title-icon">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="#f1bb13">
-                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/>
+            {/* Welcome strip */}
+            <div className="welcome-strip">
+              <div className="welcome-label">Bem-vindo de volta</div>
+              <div className="welcome-name">{driver?.name || 'Motorista'}</div>
+              <div className="welcome-tag">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="#f1bb13">
+                  <circle cx="12" cy="7" r="4"/><path d="M5 21a7 7 0 0 1 14 0H5z"/>
                 </svg>
+                <span>Motorista</span>
               </div>
-              Suas Rotas
             </div>
 
-            {loadingRoutes && (
-              <div className="loading-text">
-                <div className="loading-spinner" />
-                Carregando rotas...
-              </div>
-            )}
+            <div className="sections">
 
-            {errorRoutes && <div className="error-box">{errorRoutes}</div>}
-
-            {!loadingRoutes && rotas.length === 0 && (
-              <div className="loading-text">Nenhuma rota prevista no momento</div>
-            )}
-
-            {!loadingRoutes && rotas.length > 0 && (
-              <div className="routes-container">
-                <button
-                  className="nav-btn"
-                  onClick={goToPrevRota}
-                  disabled={rotas.length <= 1}
-                  aria-label="Rota anterior"
-                >
-                  ‹
-                </button>
-
-                <div className="routes-carousel">
-                  {rotas.map((rota, index) =>
-                    index === currentRotaIndex ? (
-                      <div
-                        key={rota.id}
-                        className="route-item"
-                        onClick={() => router.push(`/acompanharRota/${rota.id}`)}
-                        role="button"
-                        tabIndex={0}
-                      >
-                        <div className="route-top">
-                          <span className="route-badge">{formatarHorario(rota.departure_time || rota.start_time)}</span>
-                          <span className="route-name">{rota.name || 'Rota'}</span>
-                        </div>
-                        <div className="route-details">
-                          <div className="route-detail-row">
-                            <span className="route-detail-label">Partida:</span>
-                            <span>{formatarHorario(rota.departure_time || rota.start_time)}</span>
-                          </div>
-                          <div className="route-detail-row">
-                            <span className="route-detail-label">Início:</span>
-                            <span>{typeof rota.start_point === 'object' ? rota.start_point?.name : rota.start_point}</span>
-                          </div>
-                          <div className="route-detail-row">
-                            <span className="route-detail-label">Fim:</span>
-                            <span>{typeof rota.end_point === 'object' ? rota.end_point?.name : rota.end_point}</span>
-                          </div>
-                        </div>
-                        <div className="route-counter">{currentRotaIndex + 1} / {rotas.length}</div>
+              {/* ── Rotas ── */}
+              <div className="card">
+                <div className="card-header">
+                  <div className="card-header-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#f1bb13">
+                      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/>
+                    </svg>
+                  </div>
+                  <span className="card-header-text">Suas Rotas</span>
+                </div>
+                <div className="card-body">
+                  {loadingRoutes && (
+                    <div className="loading-row">
+                      <div className="spinner" /> Carregando rotas...
+                    </div>
+                  )}
+                  {errorRoutes && <div className="error-box">{errorRoutes}</div>}
+                  {!loadingRoutes && rotas.length === 0 && (
+                    <div className="empty-state">Nenhuma rota prevista no momento</div>
+                  )}
+                  {!loadingRoutes && rotas.length > 0 && (
+                    <div className="routes-nav">
+                      <button className="nav-btn" onClick={goToPrevRota} disabled={rotas.length <= 1} aria-label="Anterior">‹</button>
+                      <div style={{ flex: 1 }}>
+                        {rotas.map((rota, index) =>
+                          index === currentRotaIndex ? (
+                            <div
+                              key={rota.id}
+                              className="route-card"
+                              onClick={() => router.push(`/acompanharRota/${rota.id}`)}
+                              role="button"
+                              tabIndex={0}
+                            >
+                              <div className="route-top">
+                                <span className="route-badge">{formatarHorario(rota.departure_time || rota.start_time)}</span>
+                                <span className="route-name">{rota.name || 'Rota'}</span>
+                              </div>
+                              <div className="route-row">
+                                <strong>Partida:</strong>
+                                <span>{formatarHorario(rota.departure_time || rota.start_time)}</span>
+                              </div>
+                              <div className="route-row">
+                                <strong>Início:</strong>
+                                <span>{typeof rota.start_point === 'object' ? rota.start_point?.name : rota.start_point}</span>
+                              </div>
+                              <div className="route-row">
+                                <strong>Fim:</strong>
+                                <span>{typeof rota.end_point === 'object' ? rota.end_point?.name : rota.end_point}</span>
+                              </div>
+                              <div className="route-counter">{currentRotaIndex + 1} / {rotas.length}</div>
+                            </div>
+                          ) : null
+                        )}
                       </div>
-                    ) : null
+                      <button className="nav-btn" onClick={goToNextRota} disabled={rotas.length <= 1} aria-label="Próxima">›</button>
+                    </div>
                   )}
                 </div>
-
-                <button
-                  className="nav-btn"
-                  onClick={goToNextRota}
-                  disabled={rotas.length <= 1}
-                  aria-label="Próxima rota"
-                >
-                  ›
-                </button>
               </div>
-            )}
-          </div>
 
-          {/* ── Despesa ── */}
-          <div className="card">
-            <div className="card-title">
-              <div className="card-title-icon">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="#f1bb13">
-                  <path d="M12 2a1 1 0 0 1 1 1v1.07C16.39 4.56 19 6.58 19 9c0 .55-.45 1-1 1s-1-.45-1-1c0-1.3-2.06-2.5-5-2.5S7 7.7 7 9s2.06 2.5 5 2.5c3.87 0 6 1.93 6 4.5 0 2.42-2.61 4.44-6 4.93V22a1 1 0 1 1-2 0v-1.07C6.61 20.44 4 18.42 4 16c0-.55.45-1 1-1s1 .45 1 1c0 1.3 2.06 2.5 5 2.5s5-1.2 5-2.5-2.06-2.5-5-2.5c-3.87 0-6-1.93-6-4.5C5 6.58 7.61 4.56 11 4.07V3a1 1 0 0 1 1-1z"/>
-                </svg>
+              {/* ── Despesa ── */}
+              <div className="card">
+                <div className="card-header">
+                  <div className="card-header-icon">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="#f1bb13">
+                      <path d="M12 2a1 1 0 0 1 1 1v1.07C16.39 4.56 19 6.58 19 9c0 .55-.45 1-1 1s-1-.45-1-1c0-1.3-2.06-2.5-5-2.5S7 7.7 7 9s2.06 2.5 5 2.5c3.87 0 6 1.93 6 4.5 0 2.42-2.61 4.44-6 4.93V22a1 1 0 1 1-2 0v-1.07C6.61 20.44 4 18.42 4 16c0-.55.45-1 1-1s1 .45 1 1c0 1.3 2.06 2.5 5 2.5s5-1.2 5-2.5-2.06-2.5-5-2.5c-3.87 0-6-1.93-6-4.5C5 6.58 7.61 4.56 11 4.07V3a1 1 0 0 1 1-1z"/>
+                    </svg>
+                  </div>
+                  <span className="card-header-text">Cadastrar Despesa</span>
+                </div>
+                <div className="card-body">
+                  {expenseError && <div className="error-box">{expenseError}</div>}
+
+                  <form onSubmit={handleEnviarDespesa}>
+                    <div className="two-col">
+                      <div className="field">
+                        <label className="label">Placa *</label>
+                        <input type="text" className="input" placeholder="ABC-1234" value={vehicle_plate} onChange={handlePlateChange} maxLength={8} disabled={enviando} required />
+                      </div>
+                      <div className="field">
+                        <label className="label">Valor *</label>
+                        <input type="text" className="input" placeholder="R$ 0,00" value={value} onChange={handleValueChange} disabled={enviando} required />
+                      </div>
+                    </div>
+
+                    <div className="field">
+                      <label className="label">Descrição</label>
+                      <input type="text" className="input" placeholder="Ex: Combustível, manutenção..." value={description} onChange={(e) => setDescription(e.target.value)} disabled={enviando} />
+                    </div>
+
+                    <div className="field">
+                      <label className="label">Comprovante</label>
+                      <input
+                        type="file"
+                        className="input"
+                        style={{ paddingTop: '11px', height: 'auto', minHeight: '46px', fontSize: '12px' }}
+                        accept="image/*"
+                        onChange={(e) => setProofOfPayment(e.target.files?.[0] || null)}
+                        disabled={enviando}
+                      />
+                      <span className="file-hint">Apenas imagens (JPG, PNG, WEBP) — máx. 3MB</span>
+                      {proofOfPayment && <span className="file-ok">✓ {proofOfPayment.name}</span>}
+                    </div>
+
+                    <button type="submit" className={`submit-btn${enviado ? ' success' : ''}`} disabled={enviando || enviado}>
+                      {enviando && <span className="btn-spinner" />}
+                      {enviando ? 'Enviando...' : enviado ? '✓ Enviado!' : 'Enviar Despesa'}
+                    </button>
+                  </form>
+                </div>
               </div>
-              Cadastrar Despesa
+
             </div>
-
-            {expenseError && (
-              <div className="error-box" style={{ marginBottom: '16px' }}>{expenseError}</div>
-            )}
-
-            <form onSubmit={handleEnviarDespesa}>
-              <div className="two-col">
-                <div className="field">
-                  <label className="label">Placa *</label>
-                  <input
-                    type="text"
-                    className="input"
-                    placeholder="ABC-1234"
-                    value={vehicle_plate}
-                    onChange={handlePlateChange}
-                    maxLength={8}
-                    disabled={enviando}
-                    required
-                  />
-                </div>
-                <div className="field">
-                  <label className="label">Valor *</label>
-                  <input
-                    type="text"
-                    className="input"
-                    placeholder="R$ 0,00"
-                    value={value}
-                    onChange={handleValueChange}
-                    disabled={enviando}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="field">
-                <label className="label">Descrição</label>
-                <input
-                  type="text"
-                  className="input"
-                  placeholder="Ex: Combustível, manutenção..."
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  disabled={enviando}
-                />
-              </div>
-
-              <div className="field">
-                <label className="label">Comprovante</label>
-                <input
-                  type="file"
-                  className="input"
-                  style={{ paddingTop: '12px', height: 'auto', minHeight: '48px' }}
-                  accept="image/*"
-                  onChange={(e) => setProofOfPayment(e.target.files?.[0] || null)}
-                  disabled={enviando}
-                />
-                <span className="file-hint">Apenas imagens (JPG, PNG, WEBP) — máx. 3MB</span>
-                {proofOfPayment && (
-                  <span className="file-selected">{proofOfPayment.name}</span>
-                )}
-              </div>
-
-              <button
-                type="submit"
-                className={`submit-btn${enviado ? ' success' : ''}`}
-                disabled={enviando || enviado}
-              >
-                {enviando && <span className="btn-spinner" />}
-                {enviando ? 'Enviando...' : enviado ? '✓ Enviado!' : 'Enviar Despesa'}
-              </button>
-            </form>
           </div>
+
+          {/* ── Footer ── */}
+          <footer className="footer">
+            <p>© 2026 Omnibus · Gestão Escolar</p>
+          </footer>
 
         </div>
-
-        <footer className="footer">
-          <p>© 2026 Omnibus</p>
-        </footer>
       </div>
     </>
   )
