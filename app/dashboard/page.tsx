@@ -25,26 +25,17 @@ export default function DashboardPage() {
   const [proofPreviewUrl, setProofPreviewUrl] = useState<string | null>(null)
   const [expenseError, setExpenseError] = useState<string | null>(null)
 
-  // ── Aguarda o hook de auth terminar de carregar antes de redirecionar ──
   useEffect(() => {
     if (isLoading) return
-    if (!isAuthenticated) {
-      router.push('/login')
-    }
+    if (!isAuthenticated) router.push('/login')
   }, [isAuthenticated, isLoading, router])
 
   useEffect(() => {
-    if (isAuthenticated && driver) {
-      fetchRoutes()
-    }
+    if (isAuthenticated && driver) fetchRoutes()
   }, [isAuthenticated, driver])
 
-  // Gera preview local da imagem selecionada
   useEffect(() => {
-    if (!proofOfPayment) {
-      setProofPreviewUrl(null)
-      return
-    }
+    if (!proofOfPayment) { setProofPreviewUrl(null); return }
     const url = URL.createObjectURL(proofOfPayment)
     setProofPreviewUrl(url)
     return () => URL.revokeObjectURL(url)
@@ -58,7 +49,6 @@ export default function DashboardPage() {
       setRotas(Array.isArray(data) ? data : [])
     } catch (error: any) {
       setErrorRoutes('Erro ao carregar rotas')
-      console.error('Erro ao buscar rotas:', error)
     } finally {
       setLoadingRoutes(false)
     }
@@ -68,26 +58,13 @@ export default function DashboardPage() {
     e.preventDefault()
     setExpenseError(null)
 
-    if (!vehicle_plate || !value) {
-      setExpenseError('Preencha todos os campos obrigatórios')
-      return
-    }
-    if (!proofOfPayment) {
-      setExpenseError('Selecione um comprovante de pagamento')
-      return
-    }
-    if (proofOfPayment.size > 3 * 1024 * 1024) {
-      setExpenseError('📸 Arquivo muito grande! Use uma imagem menor que 3MB.')
-      return
-    }
-    if (!proofOfPayment.type.startsWith('image/')) {
-      setExpenseError('⚠️ Envie apenas imagens (JPG, PNG, WEBP).')
-      return
-    }
+    if (!vehicle_plate || !value) { setExpenseError('Preencha todos os campos obrigatórios'); return }
+    if (!proofOfPayment) { setExpenseError('Selecione um comprovante de pagamento'); return }
+    if (proofOfPayment.size > 3 * 1024 * 1024) { setExpenseError('📸 Arquivo muito grande! Use uma imagem menor que 3MB.'); return }
+    if (!proofOfPayment.type.startsWith('image/')) { setExpenseError('⚠️ Envie apenas imagens (JPG, PNG, WEBP).'); return }
 
     try {
       setEnviando(true)
-
       const base64String = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader()
         reader.onload = () => resolve(reader.result as string)
@@ -101,55 +78,36 @@ export default function DashboardPage() {
         return
       }
 
-      const plateUnmasked = unmaskPlate(vehicle_plate)
-      const valueUnmasked = unmaskCurrency(value)
-
       await expensesService.createExpense({
-        vehicle_plate: plateUnmasked,
-        value: valueUnmasked,
+        vehicle_plate: unmaskPlate(vehicle_plate),
+        value: unmaskCurrency(value),
         description,
         proof_of_payment: base64String,
       })
 
       setEnviado(true)
-      setVehicle_plate('')
-      setValue('')
-      setDescription('')
-      setProofOfPayment(null)
-      setProofPreviewUrl(null)
+      setVehicle_plate(''); setValue(''); setDescription('')
+      setProofOfPayment(null); setProofPreviewUrl(null)
       setTimeout(() => setEnviado(false), 2000)
 
     } catch (error: any) {
       const status = error?.response?.status
       const msg = error?.response?.data?.message || error?.message || ''
-
-      if (msg.includes('muito grande') || error?.response?.data?.error === 'file_too_large') {
+      if (msg.includes('muito grande') || error?.response?.data?.error === 'file_too_large')
         setExpenseError('📸 Arquivo muito grande! Use uma imagem menor que 3MB.')
-      } else if (status === 422) {
-        setExpenseError('⚠️ Verifique os dados: placa, valor e comprovante.')
-      } else if (status === 401) {
-        setExpenseError('🔐 Sessão expirada. Faça login novamente.')
-      } else if (status >= 500) {
-        setExpenseError('🔧 Erro no servidor. Tente novamente.')
-      } else if (!error?.response) {
-        setExpenseError('📡 Sem conexão. Verifique sua internet.')
-      } else {
-        setExpenseError(msg || '❌ Erro ao enviar despesa.')
-      }
+      else if (status === 422) setExpenseError('⚠️ Verifique os dados: placa, valor e comprovante.')
+      else if (status === 401) setExpenseError('🔐 Sessão expirada. Faça login novamente.')
+      else if (status >= 500) setExpenseError('🔧 Erro no servidor. Tente novamente.')
+      else if (!error?.response) setExpenseError('📡 Sem conexão. Verifique sua internet.')
+      else setExpenseError(msg || '❌ Erro ao enviar despesa.')
     } finally {
       setEnviando(false)
     }
   }
 
   const handleLogout = async () => {
-    try {
-      await logout()
-      await new Promise(resolve => setTimeout(resolve, 300))
-      router.push('/login')
-    } catch (error) {
-      console.error('Erro ao fazer logout:', error)
-      router.push('/login')
-    }
+    try { await logout(); await new Promise(r => setTimeout(r, 300)); router.push('/login') }
+    catch { router.push('/login') }
   }
 
   const formatarHorario = (time: string): string => {
@@ -157,18 +115,9 @@ export default function DashboardPage() {
     return time.substring(0, 5)
   }
 
-  const goToNextRota = () => setCurrentRotaIndex((prev) => (prev + 1) % rotas.length)
-  const goToPrevRota = () => setCurrentRotaIndex((prev) => (prev - 1 + rotas.length) % rotas.length)
+  const goToNextRota = () => setCurrentRotaIndex((p) => (p + 1) % rotas.length)
+  const goToPrevRota = () => setCurrentRotaIndex((p) => (p - 1 + rotas.length) % rotas.length)
 
-  const handlePlateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setVehicle_plate(maskPlate(e.target.value))
-  }
-
-  const handleValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setValue(maskCurrency(e.target.value))
-  }
-
-  // Enquanto o auth ainda carrega, não renderiza nada (evita flash de redirect)
   if (isLoading) return null
 
   return (
@@ -181,10 +130,9 @@ export default function DashboardPage() {
         html, body {
           height: 100%;
           font-family: 'DM Sans', sans-serif;
-          background: #e8eaed;
+          background: #f4f6fa;
         }
 
-        /* ── Shell ── */
         .shell {
           min-height: 100vh;
           display: flex;
@@ -196,20 +144,15 @@ export default function DashboardPage() {
           width: 100%;
           max-width: 430px;
           min-height: 100vh;
-          background: #ffffff;
+          background: #fff;
           display: flex;
           flex-direction: column;
-          position: relative;
           overflow: hidden;
         }
 
-        @media (min-width: 520px) {
-          .phone { min-height: 820px; }
-        }
-
-        /* ── Header simples (sem logo, sem borda amarela) ── */
+        /* ── Header minimalista ── */
         .header {
-          background: #01233F;
+          background: #1b3f63;
           height: 48px;
           display: flex;
           align-items: center;
@@ -220,12 +163,12 @@ export default function DashboardPage() {
           flex-shrink: 0;
         }
 
-        /* ── Welcome strip — FIXO ao rolar ── */
+        /* ── Welcome strip FIXO ── */
         .welcome-strip {
-          background: #01233F;
+          background: #1b3f63;
           padding: 14px 20px 26px;
           position: sticky;
-          top: 48px;           /* logo abaixo do header */
+          top: 48px;
           z-index: 40;
           display: flex;
           align-items: center;
@@ -257,7 +200,7 @@ export default function DashboardPage() {
         .welcome-name {
           font-size: 18px;
           font-weight: 800;
-          color: #ffffff;
+          color: #fff;
           letter-spacing: -0.3px;
         }
 
@@ -305,12 +248,8 @@ export default function DashboardPage() {
           flex: 1;
           overflow-y: auto;
           background: #f4f6fa;
-          display: flex;
-          flex-direction: column;
-          gap: 0;
         }
 
-        /* ── Sections ── */
         .sections {
           padding: 28px 16px 24px;
           display: flex;
@@ -320,11 +259,11 @@ export default function DashboardPage() {
 
         /* ── Card ── */
         .card {
-          background: #ffffff;
+          background: #fff;
           border-radius: 16px;
           border: 1px solid #e2e6ea;
           overflow: hidden;
-          box-shadow: 0 2px 12px rgba(1,35,63,0.06);
+          box-shadow: 0 2px 12px rgba(27,63,99,0.06);
         }
 
         .card-header {
@@ -336,8 +275,7 @@ export default function DashboardPage() {
         }
 
         .card-header-icon {
-          width: 32px;
-          height: 32px;
+          width: 32px; height: 32px;
           background: rgba(241,187,19,0.12);
           border-radius: 9px;
           display: flex;
@@ -349,14 +287,12 @@ export default function DashboardPage() {
         .card-header-text {
           font-size: 11px;
           font-weight: 700;
-          color: #01233F;
+          color: #1b3f63;
           letter-spacing: 1.2px;
           text-transform: uppercase;
         }
 
-        .card-body {
-          padding: 16px 18px;
-        }
+        .card-body { padding: 16px 18px; }
 
         /* ── Routes ── */
         .routes-nav {
@@ -366,10 +302,9 @@ export default function DashboardPage() {
         }
 
         .nav-btn {
-          width: 34px;
-          height: 34px;
+          width: 34px; height: 34px;
           border-radius: 50%;
-          background: #01233F;
+          background: #1b3f63;
           color: #f1bb13;
           border: none;
           cursor: pointer;
@@ -383,11 +318,7 @@ export default function DashboardPage() {
           line-height: 1;
         }
 
-        .nav-btn:hover:not(:disabled) {
-          background: #f1bb13;
-          color: #01233F;
-        }
-
+        .nav-btn:hover:not(:disabled) { background: #f1bb13; color: #1b3f63; }
         .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
         .route-card {
@@ -397,14 +328,6 @@ export default function DashboardPage() {
           border-left: 4px solid #f1bb13;
           border-radius: 10px;
           padding: 14px;
-          cursor: pointer;
-          transition: all 0.18s;
-        }
-
-        .route-card:hover {
-          border-color: #f1bb13;
-          box-shadow: 0 4px 14px rgba(241,187,19,0.15);
-          transform: translateY(-1px);
         }
 
         .route-top {
@@ -415,7 +338,7 @@ export default function DashboardPage() {
         }
 
         .route-badge {
-          background: #01233F;
+          background: #1b3f63;
           color: #f1bb13;
           font-size: 11px;
           font-weight: 700;
@@ -428,7 +351,7 @@ export default function DashboardPage() {
         .route-name {
           font-size: 13px;
           font-weight: 700;
-          color: #01233F;
+          color: #1b3f63;
         }
 
         .route-row {
@@ -440,13 +363,40 @@ export default function DashboardPage() {
           margin-bottom: 4px;
         }
 
-        .route-row:last-child { margin-bottom: 0; }
+        .route-row:last-of-type { margin-bottom: 0; }
 
         .route-row strong {
-          color: #01233F;
+          color: #1b3f63;
           font-weight: 600;
           min-width: 48px;
           flex-shrink: 0;
+        }
+
+        /* ── Ver rota link ── */
+        .ver-rota-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          width: 100%;
+          margin-top: 12px;
+          padding: 9px 0;
+          background: rgba(241,187,19,0.1);
+          border: 1.5px solid rgba(241,187,19,0.35);
+          border-radius: 8px;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 11px;
+          font-weight: 700;
+          color: #1b3f63;
+          letter-spacing: 0.8px;
+          text-transform: uppercase;
+          cursor: pointer;
+          transition: background 0.15s, border-color 0.15s;
+        }
+
+        .ver-rota-btn:hover {
+          background: rgba(241,187,19,0.18);
+          border-color: #f1bb13;
         }
 
         .route-counter {
@@ -457,6 +407,7 @@ export default function DashboardPage() {
           margin-top: 10px;
         }
 
+        /* ── Loading / empty ── */
         .loading-row {
           display: flex;
           align-items: center;
@@ -473,7 +424,6 @@ export default function DashboardPage() {
           border-top-color: #f1bb13;
           border-radius: 50%;
           animation: spin 0.8s linear infinite;
-          flex-shrink: 0;
         }
 
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -519,7 +469,7 @@ export default function DashboardPage() {
         .label {
           font-size: 10px;
           font-weight: 700;
-          color: #01233F;
+          color: #1b3f63;
           letter-spacing: 1.2px;
           text-transform: uppercase;
         }
@@ -531,7 +481,7 @@ export default function DashboardPage() {
           border-radius: 10px;
           padding: 0 13px;
           font-size: 13px;
-          color: #01233F;
+          color: #1b3f63;
           background: #f7f8fa;
           font-family: 'DM Sans', sans-serif;
           outline: none;
@@ -548,20 +498,9 @@ export default function DashboardPage() {
 
         .input:disabled { opacity: 0.6; }
 
-        .file-hint {
-          font-size: 10px;
-          color: #b0bac6;
-          margin-top: 2px;
-        }
+        .file-hint { font-size: 10px; color: #b0bac6; margin-top: 2px; }
+        .file-ok   { font-size: 11px; color: #16a34a; font-weight: 600; margin-top: 3px; }
 
-        .file-ok {
-          font-size: 11px;
-          color: #16a34a;
-          font-weight: 600;
-          margin-top: 3px;
-        }
-
-        /* ── Preview do comprovante ── */
         .proof-preview {
           margin-top: 10px;
           border-radius: 10px;
@@ -576,9 +515,8 @@ export default function DashboardPage() {
 
         .proof-preview img {
           width: 100%;
-          height: 100%;
-          object-fit: contain;
           max-height: 260px;
+          object-fit: contain;
           display: block;
         }
 
@@ -591,7 +529,7 @@ export default function DashboardPage() {
           font-size: 12px;
           font-weight: 700;
           letter-spacing: 1.5px;
-          color: #01233F;
+          color: #1b3f63;
           text-transform: uppercase;
           cursor: pointer;
           font-family: 'DM Sans', sans-serif;
@@ -610,20 +548,20 @@ export default function DashboardPage() {
         }
 
         .submit-btn:active:not(:disabled) { transform: translateY(0); }
-        .submit-btn:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
+        .submit-btn:disabled { opacity: 0.65; cursor: not-allowed; }
         .submit-btn.success { background: #22c55e; color: #fff; }
 
         .btn-spinner {
           width: 14px; height: 14px;
-          border: 2px solid rgba(1,35,63,0.2);
-          border-top-color: #01233F;
+          border: 2px solid rgba(27,63,99,0.2);
+          border-top-color: #1b3f63;
           border-radius: 50%;
           animation: spin 0.6s linear infinite;
         }
 
         /* ── Footer ── */
         .footer {
-          background: #01233F;
+          background: #1b3f63;
           border-top: 2px solid #f1bb13;
           padding: 13px;
           text-align: center;
@@ -640,10 +578,9 @@ export default function DashboardPage() {
       <div className="shell">
         <div className="phone">
 
-          {/* ── Header minimalista (sem logo, sem linha amarela) ── */}
           <header className="header" />
 
-          {/* ── Welcome strip FIXO ao rolar ── */}
+          {/* ── Welcome strip FIXO ── */}
           <div className="welcome-strip">
             <div className="welcome-left">
               <div className="welcome-label">Bem-vindo de volta</div>
@@ -674,9 +611,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="card-body">
                   {loadingRoutes && (
-                    <div className="loading-row">
-                      <div className="spinner" /> Carregando rotas...
-                    </div>
+                    <div className="loading-row"><div className="spinner" /> Carregando rotas...</div>
                   )}
                   {errorRoutes && <div className="error-box">{errorRoutes}</div>}
                   {!loadingRoutes && rotas.length === 0 && (
@@ -688,13 +623,7 @@ export default function DashboardPage() {
                       <div style={{ flex: 1 }}>
                         {rotas.map((rota, index) =>
                           index === currentRotaIndex ? (
-                            <div
-                              key={rota.id}
-                              className="route-card"
-                              onClick={() => router.push(`/acompanharRota/${rota.id}`)}
-                              role="button"
-                              tabIndex={0}
-                            >
+                            <div key={rota.id} className="route-card">
                               <div className="route-top">
                                 <span className="route-badge">{formatarHorario(rota.departure_time || rota.start_time)}</span>
                                 <span className="route-name">{rota.name || 'Rota'}</span>
@@ -711,6 +640,19 @@ export default function DashboardPage() {
                                 <strong>Fim:</strong>
                                 <span>{typeof rota.end_point === 'object' ? rota.end_point?.name : rota.end_point}</span>
                               </div>
+
+                              {/* ── Ver rota ── */}
+                              <button
+                                className="ver-rota-btn"
+                                onClick={() => router.push(`/acompanharRota/${rota.id}`)}
+                              >
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1b3f63" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                  <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                Clique aqui para ver a rota
+                              </button>
+
                               <div className="route-counter">{currentRotaIndex + 1} / {rotas.length}</div>
                             </div>
                           ) : null
@@ -739,17 +681,26 @@ export default function DashboardPage() {
                     <div className="two-col">
                       <div className="field">
                         <label className="label">Placa *</label>
-                        <input type="text" className="input" placeholder="ABC-1234" value={vehicle_plate} onChange={handlePlateChange} maxLength={8} disabled={enviando} required />
+                        <input type="text" className="input" placeholder="ABC-1234"
+                          value={vehicle_plate}
+                          onChange={(e) => setVehicle_plate(maskPlate(e.target.value))}
+                          maxLength={8} disabled={enviando} required />
                       </div>
                       <div className="field">
                         <label className="label">Valor *</label>
-                        <input type="text" className="input" placeholder="R$ 0,00" value={value} onChange={handleValueChange} disabled={enviando} required />
+                        <input type="text" className="input" placeholder="R$ 0,00"
+                          value={value}
+                          onChange={(e) => setValue(maskCurrency(e.target.value))}
+                          disabled={enviando} required />
                       </div>
                     </div>
 
                     <div className="field">
                       <label className="label">Descrição</label>
-                      <input type="text" className="input" placeholder="Ex: Combustível, manutenção..." value={description} onChange={(e) => setDescription(e.target.value)} disabled={enviando} />
+                      <input type="text" className="input" placeholder="Ex: Combustível, manutenção..."
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        disabled={enviando} />
                     </div>
 
                     <div className="field">
@@ -787,7 +738,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* ── Footer ── */}
           <footer className="footer">
             <p>© 2026 Omnibus · Gestão Escolar</p>
           </footer>
