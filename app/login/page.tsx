@@ -14,12 +14,10 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLocalError(null)
-
     if (!email || !password) {
       setLocalError('Por favor, preencha todos os campos')
       return
     }
-
     try {
       await login({ email, password })
       router.push('/dashboard')
@@ -52,55 +50,43 @@ export default function LoginPage() {
           width: 100%;
           max-width: 430px;
           min-height: 100vh;
-          background: #ffffff;
+          background: #fff;
           display: flex;
           flex-direction: column;
-          position: relative;
         }
 
-        /* ── Top dark block ── */
+        /* ── Top azul com logo ── */
         .top-block {
-          background: #01233F;
-          padding: 56px 28px 48px;
+          background: #1b3f63;
+          padding: 52px 28px 44px;
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 24px;
           position: relative;
         }
 
         .top-block::after {
           content: '';
           position: absolute;
-          bottom: -20px;
+          bottom: -22px;
           left: 0; right: 0;
-          height: 40px;
-          background: #ffffff;
-          border-radius: 24px 24px 0 0;
+          height: 44px;
+          background: #fff;
+          border-radius: 26px 26px 0 0;
         }
 
-        .brand-tag {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          background: rgba(241,187,19,0.12);
-          border: 1px solid rgba(241,187,19,0.25);
-          border-radius: 20px;
-          padding: 5px 14px;
-        }
-
-        .brand-tag span {
-          font-size: 10px;
-          font-weight: 700;
-          color: #f1bb13;
-          letter-spacing: 1.5px;
-          text-transform: uppercase;
+        /* Fundo levemente translúcido para dar contraste à logo */
+        .logo-wrap {
+          background: rgba(255,255,255,0.13);
+          border-radius: 14px;
+          padding: 16px 30px;
+          backdrop-filter: blur(4px);
         }
 
         /* ── Form area ── */
         .form-area {
           flex: 1;
-          padding: 40px 24px 32px;
+          padding: 44px 24px 24px;
           display: flex;
           flex-direction: column;
         }
@@ -108,7 +94,7 @@ export default function LoginPage() {
         .page-title {
           font-size: 22px;
           font-weight: 800;
-          color: #01233F;
+          color: #1b3f63;
           letter-spacing: -0.5px;
           margin-bottom: 4px;
         }
@@ -116,7 +102,28 @@ export default function LoginPage() {
         .page-subtitle {
           font-size: 13px;
           color: #6b7a8d;
-          margin-bottom: 28px;
+          margin-bottom: 22px;
+        }
+
+        /* ── Info alert ── */
+        .info-alert {
+          background: #eef4fb;
+          border: 1px solid #c5d8ee;
+          border-left: 3px solid #4a90c4;
+          border-radius: 10px;
+          padding: 11px 14px;
+          margin-bottom: 22px;
+          display: flex;
+          gap: 9px;
+          align-items: flex-start;
+        }
+
+        .info-icon { flex-shrink: 0; margin-top: 1px; }
+
+        .info-text {
+          font-size: 12px;
+          color: #2c5282;
+          line-height: 1.55;
         }
 
         /* ── Error box ── */
@@ -128,7 +135,7 @@ export default function LoginPage() {
           border-radius: 10px;
           font-size: 12px;
           font-weight: 500;
-          margin-bottom: 18px;
+          margin-bottom: 16px;
           animation: slideIn 0.25s ease-out;
         }
 
@@ -137,7 +144,6 @@ export default function LoginPage() {
           to   { opacity: 1; transform: translateY(0); }
         }
 
-        /* ── Field ── */
         .field {
           display: flex;
           flex-direction: column;
@@ -148,7 +154,7 @@ export default function LoginPage() {
         .label {
           font-size: 10px;
           font-weight: 700;
-          color: #01233F;
+          color: #1b3f63;
           letter-spacing: 1.2px;
           text-transform: uppercase;
         }
@@ -177,14 +183,17 @@ export default function LoginPage() {
           background: transparent;
           font-family: 'DM Sans', sans-serif;
           font-size: 14px;
-          color: #01233F;
+          color: #1b3f63;
           outline: none;
         }
 
         .input-wrap input::placeholder { color: #b0bac6; }
         .input-wrap input:disabled { opacity: 0.6; }
 
-        .input-icon { flex-shrink: 0; }
+        .field-hint {
+          font-size: 10px;
+          color: #9aa5b4;
+        }
 
         /* ── Submit ── */
         .submit-btn {
@@ -193,10 +202,10 @@ export default function LoginPage() {
           background: #f1bb13;
           border: none;
           border-radius: 12px;
-          font-size: 12px;
+          font-size: 13px;
           font-weight: 700;
-          letter-spacing: 1.5px;
-          color: #01233F;
+          letter-spacing: 1px;
+          color: #1b3f63;
           text-transform: uppercase;
           cursor: pointer;
           font-family: 'DM Sans', sans-serif;
@@ -219,17 +228,16 @@ export default function LoginPage() {
 
         .btn-spinner {
           width: 14px; height: 14px;
-          border: 2px solid rgba(1,35,63,0.2);
-          border-top-color: #01233F;
+          border: 2px solid rgba(27,63,99,0.2);
+          border-top-color: #1b3f63;
           border-radius: 50%;
           animation: spin 0.6s linear infinite;
         }
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* ── Footer ── */
         .footer {
-          background: #01233F;
+          background: #1b3f63;
           border-top: 2px solid #f1bb13;
           padding: 13px;
           text-align: center;
@@ -245,21 +253,28 @@ export default function LoginPage() {
       <div className="shell">
         <div className="phone">
 
-          {/* ── Top dark block com logo ── */}
           <div className="top-block">
-            <Image src="/logo.png" alt="Omnibus" width={140} height={46} style={{ objectFit: 'contain' }} />
-            <div className="brand-tag">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="#f1bb13">
-                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/>
-              </svg>
-              <span>Área do Motorista</span>
+            <div className="logo-wrap">
+              <Image src="/logo.png" alt="Omnibus" width={150} height={50} style={{ objectFit: 'contain' }} />
             </div>
           </div>
 
-          {/* ── Form ── */}
           <div className="form-area">
             <div className="page-title">Bem-vindo</div>
             <div className="page-subtitle">Acesse sua conta para continuar</div>
+
+            <div className="info-alert">
+              <span className="info-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4a90c4" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="8" x2="12" y2="12"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+              </span>
+              <span className="info-text">
+                O acesso só é possível se a secretaria já tiver te cadastrado e fornecido suas credenciais.
+              </span>
+            </div>
 
             {(error || localError) && (
               <div className="error-box">{error || localError}</div>
@@ -269,12 +284,10 @@ export default function LoginPage() {
               <div className="field">
                 <label className="label">E-mail</label>
                 <div className="input-wrap">
-                  <span className="input-icon">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#b0bac6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect width="20" height="16" x="2" y="4" rx="2"/>
-                      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
-                    </svg>
-                  </span>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#b0bac6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect width="20" height="16" x="2" y="4" rx="2"/>
+                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                  </svg>
                   <input
                     type="email"
                     placeholder="seu@email.com"
@@ -289,12 +302,10 @@ export default function LoginPage() {
               <div className="field">
                 <label className="label">Senha</label>
                 <div className="input-wrap">
-                  <span className="input-icon">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#b0bac6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
-                      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                    </svg>
-                  </span>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#b0bac6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
                   <input
                     type="password"
                     placeholder="sua senha"
@@ -304,6 +315,7 @@ export default function LoginPage() {
                     autoComplete="current-password"
                   />
                 </div>
+                <span className="field-hint">Fornecida pela secretaria no seu cadastro</span>
               </div>
 
               <button type="submit" className="submit-btn" disabled={isLoading}>
@@ -313,7 +325,6 @@ export default function LoginPage() {
             </form>
           </div>
 
-          {/* ── Footer ── */}
           <footer className="footer">
             <p>© 2026 Omnibus · Gestão Escolar</p>
           </footer>
