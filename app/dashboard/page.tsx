@@ -10,7 +10,7 @@ import { Route } from '@/types'
 
 export default function DashboardPage() {
   const router = useRouter()
-  const { driver, logout, isAuthenticated, loading } = useAuth()
+  const { driver, logout, isAuthenticated, isLoading } = useAuth()
   const [rotas, setRotas] = useState<Route[]>([])
   const [loadingRoutes, setLoadingRoutes] = useState(true)
   const [errorRoutes, setErrorRoutes] = useState<string | null>(null)
@@ -27,11 +27,11 @@ export default function DashboardPage() {
 
   // ── Aguarda o hook de auth terminar de carregar antes de redirecionar ──
   useEffect(() => {
-    if (loading) return
+    if (isLoading) return
     if (!isAuthenticated) {
       router.push('/login')
     }
-  }, [isAuthenticated, loading, router])
+  }, [isAuthenticated, isLoading, router])
 
   useEffect(() => {
     if (isAuthenticated && driver) {
@@ -169,7 +169,7 @@ export default function DashboardPage() {
   }
 
   // Enquanto o auth ainda carrega, não renderiza nada (evita flash de redirect)
-  if (loading) return null
+  if (isLoading) return null
 
   return (
     <>
